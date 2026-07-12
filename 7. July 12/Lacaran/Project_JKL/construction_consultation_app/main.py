@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import mimetypes
+import os
 import threading
 import webbrowser
 from datetime import datetime
@@ -16,6 +17,15 @@ from ui import INDEX_HTML
 
 HOST = "127.0.0.1"
 PORT = 8000
+
+
+def open_app_in_browser(url):
+    try:
+        os.startfile(url)
+        return
+    except Exception:
+        pass
+    webbrowser.open(url, new=2)
 
 
 def now():
@@ -232,18 +242,17 @@ def run():
         server = ThreadingHTTPServer((HOST, PORT), AppHandler)
     except OSError as error:
         print("")
-        print("BuildScope could not start.", flush=True)
+        print("BuildScope is already running or port 8000 is busy.", flush=True)
         print(f"Reason: {error}", flush=True)
-        print(f"If the app is already running, open {url}", flush=True)
-        print("Otherwise close the old terminal or press Ctrl+C, then run this file again.", flush=True)
-        input("Press Enter to close this message...")
+        print(f"Opening the app page now: {url}", flush=True)
+        open_app_in_browser(url)
         return
 
     print("", flush=True)
     print("BuildScope Consultation Portal is running.", flush=True)
     print(f"Open this link in your browser: {url}", flush=True)
     print("Keep this terminal open. Press Ctrl+C here to stop the app.", flush=True)
-    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    threading.Timer(0.5, lambda: open_app_in_browser(url)).start()
     server.serve_forever()
 
 
