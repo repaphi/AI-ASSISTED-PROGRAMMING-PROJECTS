@@ -3,6 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# PyInstaller build artifacts
+build/
+build_tools/
+*.spec
+*.toc
+*.pkg
+*.pyz
+base_library.zip
+xref-*.html
+warn-*.txt
+
 # Local app data created by the consultation portal
 data/
 server.log

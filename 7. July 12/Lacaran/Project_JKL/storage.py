@@ -1,10 +1,11 @@
 import json
+import sys
 import uuid
 from datetime import datetime
 from pathlib import Path
 
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
 PROJECTS_FILE = DATA_DIR / "projects.json"

@@ -39,3 +39,25 @@ The app stores data locally in:
 - `data/uploads/`
 
 This keeps the sample simple for testing in Visual Studio Code. For production, replace local JSON storage with a proper database, authentication, access control, encrypted file storage, audit logs, validation, backups, and deployment hardening.
+
+## Windows EXE
+
+The packaged desktop-style app is:
+
+```text
+dist\BuildScopeApp.exe
+```
+
+Double-click `BuildScopeApp.exe` to start the app. It opens a local browser page:
+
+```text
+http://127.0.0.1:8000
+```
+
+Each computer runs its own local copy and stores its own data beside the `.exe` in a `data` folder. This is not a shared online database.
+
+To rebuild the `.exe`, run:
+
+```bat
+BUILD_EXE.bat
+```
