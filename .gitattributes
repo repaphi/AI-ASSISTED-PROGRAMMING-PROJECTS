@@ -1,0 +1,14 @@
+# Keep text line endings predictable and stop repeated LF/CRLF warnings.
+* text=auto
+
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+*.png binary
+*.zip binary
+*.pyc binary

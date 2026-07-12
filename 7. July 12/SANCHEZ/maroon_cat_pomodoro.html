@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kylle's Study Corner · Maroon Cat Pomodoro</title>
+  <style>
+    :root { --bg:#242025; --panel:#332c34; --panel2:#211c22; --deep:#171317; --maroon:#8e3f5b; --rose:#d67687; --gray:#5c525d; --gold:#f0c980; --lav:#b7b0c9; --ink:#fff8f9; --muted:#e5d9de; --line:#746670; }
+    * { box-sizing:border-box; } body { min-height:100vh; margin:0; color:var(--ink); background:radial-gradient(circle at 85% 0,#4b3542 0,transparent 31rem),var(--bg); font:16px/1.45 "Segoe UI",system-ui,sans-serif; }
+    header { max-width:1180px; padding:25px 26px 12px; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:15px; } h1 { margin:0; font:700 clamp(1.8rem,4vw,2.65rem) Georgia,serif; color:#fff8f9; } .subtitle { margin:3px 0 0; color:var(--muted); font-style:italic; font-weight:600; }
+    main { max-width:1180px; margin:auto; padding:0 26px 26px; display:grid; grid-template-columns:245px minmax(355px,1fr) minmax(270px,.85fr); gap:14px; } .panel { min-width:0; padding:17px; background:linear-gradient(145deg,#3a303a,var(--panel)); border:1px solid #9b5d72; border-radius:20px; box-shadow:0 12px 27px #0006,inset 0 1px #ffffff12; }
+    h2 { margin:0 0 9px; color:#fff8f9; font:700 1.15rem Georgia,serif; } h3 { margin:17px 0 7px; color:var(--gold); font:700 1rem Georgia,serif; } label { display:block; color:var(--muted); font-size:.85rem; font-weight:800; margin:11px 0 4px; }
+    input,select,textarea { width:100%; padding:9px; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:10px; font:inherit; } textarea { resize:vertical; min-height:130px; } button { cursor:pointer; border:0; border-radius:10px; padding:9px 11px; color:var(--ink); background:var(--gray); font:700 .92rem "Segoe UI",sans-serif; transition:.12s transform,.12s filter; } button:hover { transform:translateY(-1px); filter:brightness(1.12); } button:disabled { cursor:not-allowed; opacity:.55; transform:none; } .primary { background:var(--maroon); } .rose { background:var(--rose); color:var(--deep); } .gold { background:var(--gold); color:var(--deep); } .full { width:100%; } .row { display:flex; gap:8px; } .row>* { flex:1; }
+    .cat { width:126px; height:80px; flex:none; } .timer-mode { display:inline-block; border-radius:999px; padding:4px 9px; background:var(--maroon); color:var(--ink); font-size:.78rem; font-weight:900; letter-spacing:.08em; } .clock { margin:7px 0 0; padding:4px 8px; text-align:center; color:#fff; background:var(--deep); border:2px solid var(--rose); border-radius:15px 15px 0 0; font:700 clamp(3.4rem,8vw,5.7rem) Georgia,serif; text-shadow:0 2px 10px #0009; } .cycle { padding:0 0 8px; text-align:center; background:var(--deep); border:2px solid var(--rose); border-top:0; border-radius:0 0 15px 15px; color:#f4dde4; font-weight:800; } .status { min-height:51px; margin-top:22px; color:var(--ink); text-align:center; font-weight:700; }
+    .task-list { min-height:170px; max-height:255px; overflow:auto; margin:8px 0; border:1px solid var(--line); border-radius:10px; background:var(--panel2); } .task { display:flex; align-items:flex-start; gap:9px; padding:9px; border-bottom:1px solid #5d5059; } .task:last-child { border:0; } .task.done span { color:#c4b6bc; text-decoration:line-through; } .task input { width:17px; height:17px; flex:none; accent-color:var(--rose); } .task span { flex:1; overflow-wrap:anywhere; } .delete { padding:2px 7px; background:transparent; color:var(--rose); font-size:1.1rem; }
+    .tiny { color:var(--muted); font-size:.88rem; font-weight:600; } .tip { margin-top:20px; padding:10px; background:#4b3d46; color:#fff8f9; border-radius:10px; font-size:.9rem; font-weight:600; }
+    @media(max-width:960px){ main { grid-template-columns:230px 1fr; } .desk { grid-column:1/-1; } } @media(max-width:620px){ header,main { padding-left:14px; padding-right:14px; } main { display:flex; flex-direction:column; } .cat { display:none; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Maroon Cat Pomodoro</h1><p class="subtitle">Kylle's Study Corner · focus, notes, and tiny victories.</p></div>
+    <!-- Original inline SVG cat: no external image download is required. -->
+    <svg class="cat" viewBox="0 0 150 95" aria-label="A sleepy curled cat illustration" role="img">
+      <ellipse cx="101" cy="64" rx="40" ry="21" fill="#bb879c" stroke="#713d52" stroke-width="3"/><circle cx="52" cy="47" r="27" fill="#bb879c" stroke="#713d52" stroke-width="3"/>
+      <path d="M32 29 39 8l15 18M61 27 78 9l2 26" fill="#bb879c" stroke="#713d52" stroke-width="3" stroke-linejoin="round"/><path d="M80 66c22 7 38 0 36-18" fill="none" stroke="#713d52" stroke-width="7" stroke-linecap="round"/>
+      <path d="M40 47q6 6 12 0M58 47q6 6 12 0" fill="none" stroke="#21171d" stroke-width="3" stroke-linecap="round"/><ellipse cx="55" cy="57" rx="3" ry="2" fill="#21171d"/><circle cx="37" cy="57" r="4" fill="#df8292"/><circle cx="72" cy="57" r="4" fill="#df8292"/>
+    </svg>
+  </header>
+  <main>
+    <aside class="panel">
+      <h2>Cozy setup</h2>
+      <label>Focus minutes <input id="work" type="number" min="5" max="90"></label>
+      <label>Break minutes <input id="break" type="number" min="1" max="30"></label>
+      <label>Pomodoro cycles <input id="cycles" type="number" min="1" max="12"></label>
+      <label>Finish sound <select id="sound"><option>Meow</option><option>Purr</option><option>Mrrp</option><option>Happy trill</option></select></label>
+      <button class="full" id="save">Save settings</button><div style="height:9px"></div><button class="full gold" id="test">Test cat sound</button>
+      <div class="tip">Tip: use a short break to stand, sip water, and gently reset your eyes.</div>
+    </aside>
+    <section class="panel">
+      <h2>Focus timer</h2><span id="mode" class="timer-mode">FOCUS</span><div id="clock" class="clock">25:00</div><div id="cycle" class="cycle">Cycle 1 of 4</div>
+      <div class="row" style="margin-top:20px"><button id="toggle" class="primary">Start focus</button><button id="reset" class="rose">Reset</button></div>
+      <p id="status" class="status">Press Start when you are ready. Your cat is cheering quietly.</p>
+      <div class="tip">Every completed focus block earns a small celebration sound. You can choose a meow or a gentle purr.</div>
+    </section>
+    <section class="panel desk">
+      <h2>Study desk</h2><label>Quick task list</label>
+      <div class="row"><input id="newTask" placeholder="e.g., Finish shear-force diagrams"><button id="addTask" class="primary" style="flex:0 0 auto">Add</button></div>
+      <div id="taskList" class="task-list"></div>
+      <label>Notes to future me</label><textarea id="notes" placeholder="Write a quick reminder, formula, or study thought…"></textarea><div style="height:7px"></div><button id="saveNotes" class="full">Save notes</button>
+    </section>
+  </main>
+  <script>
+    const storageKey='kylleMaroonCatPomodoroV1';
+    const defaults={work:25,break:5,cycles:4,sound:'Meow',tasks:[],notes:''};
+    let data=Object.assign({},defaults,JSON.parse(localStorage.getItem(storageKey)||'{}'));
+    const $=id=>document.getElementById(id), saveData=()=>localStorage.setItem(storageKey,JSON.stringify(data));
+    let running=false,isBreak=false,completed=0,remaining=data.work*60,tickId=null;
+    function renderSettings(){ $('work').value=data.work;$('break').value=data.break;$('cycles').value=data.cycles;$('sound').value=data.sound;$('notes').value=data.notes; }
+    function renderTimer(){ const [m,s]=[Math.floor(Math.max(0,remaining)/60),Math.max(0,remaining)%60];$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;$('mode').textContent=isBreak?'BREAK':'FOCUS';$('cycle').textContent=`Cycle ${Math.min(completed+1,data.cycles)} of ${data.cycles}`; }
+    function validate(){const w=+$('work').value,b=+$('break').value,c=+$('cycles').value;if(w<5||w>90||b<1||b>30||c<1||c>12){alert('Focus must be 5–90 min, break 1–30 min, and cycles 1–12.');return false;} data.work=w;data.break=b;data.cycles=c;data.sound=$('sound').value;saveData();return true;}
+    function switchBlock(){catSound();if(!isBreak){completed++;if(completed>=data.cycles){running=false;$('toggle').textContent='Start a new set';remaining=data.work*60;$('status').textContent='Your Pomodoro set is complete! Stretch, hydrate, and accept an imaginary cat high-five. 🐾';alert('Set complete! Great work, Kylle. 🐾');renderTimer();return;}isBreak=true;remaining=data.break*60;$('status').textContent='Focus block complete! Enjoy your little break.';alert('Break time 🐱');}else{isBreak=false;remaining=data.work*60;$('status').textContent='Break complete. A fresh focus block is beginning.';alert('Back to focus!');}renderTimer();}
+    function tick(){if(!running)return;renderTimer();if(remaining<=0){switchBlock();if(!running)return;}else remaining--;tickId=setTimeout(tick,1000);}
+    function toggle(){if(!running&&!validate())return;running=!running;$('toggle').textContent=running?'Pause':'Resume';if(running){$('status').textContent='One small task at a time. You’ve got this.';tick();}else{clearTimeout(tickId);$('status').textContent='Paused. Focus does not have to be rushed.';}}
+    function reset(){clearTimeout(tickId);running=false;isBreak=false;completed=0;remaining=data.work*60;$('toggle').textContent='Start focus';$('status').textContent='Timer reset. A calm new start is waiting for you.';renderTimer();}
+    // Web Audio creates short synthetic cat-like cues without external sound files.
+    function catSound(){try{const C=window.AudioContext||window.webkitAudioContext,ctx=new C(),gain=ctx.createGain(),osc=ctx.createOscillator(),start=ctx.currentTime;let duration=.9;osc.type=data.sound==='Purr'?'sine':'triangle';if(data.sound==='Meow'){osc.frequency.setValueAtTime(650,start);osc.frequency.exponentialRampToValueAtTime(250,start+.75);}else if(data.sound==='Purr'){duration=1.15;osc.frequency.setValueAtTime(100,start);}else if(data.sound==='Mrrp'){duration=.52;osc.frequency.setValueAtTime(290,start);osc.frequency.exponentialRampToValueAtTime(600,start+.45);}else{duration=.72;for(let i=0;i<15;i++)osc.frequency.setValueAtTime(i%2?610:500,start+i*.045);}gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.18,start+.055);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(start+duration+.03);}catch(_){/* Browser blocked sound; the visual timer still works. */}}
+    function renderTasks(){const box=$('taskList');box.innerHTML='';if(!data.tasks.length){box.innerHTML='<p class="tiny" style="padding:9px;margin:0">No tasks yet—add one gentle next step.</p>';return;}data.tasks.forEach((task,i)=>{const row=document.createElement('div');row.className='task'+(task.done?' done':'');const check=document.createElement('input');check.type='checkbox';check.checked=task.done;check.onchange=()=>{task.done=check.checked;saveData();renderTasks();};const text=document.createElement('span');text.textContent=task.text;const del=document.createElement('button');del.className='delete';del.textContent='×';del.title='Remove task';del.onclick=()=>{data.tasks.splice(i,1);saveData();renderTasks();};row.append(check,text,del);box.append(row);});}
+    function addTask(){const input=$('newTask'),text=input.value.trim();if(!text)return;data.tasks.push({text,done:false});input.value='';saveData();renderTasks();}
+    $('save').onclick=()=>{if(validate()&&!running){remaining=data.work*60;renderTimer();}$('status').textContent='Settings saved. Your next focus block is ready.';};$('test').onclick=catSound;$('toggle').onclick=toggle;$('reset').onclick=reset;$('addTask').onclick=addTask;$('newTask').onkeydown=e=>{if(e.key==='Enter')addTask();};$('saveNotes').onclick=()=>{data.notes=$('notes').value;saveData();$('saveNotes').textContent='Notes saved ✓';setTimeout(()=>$('saveNotes').textContent='Save notes',1100);};window.addEventListener('beforeunload',()=>{data.notes=$('notes').value;saveData();});
+    renderSettings();renderTasks();renderTimer();
+  </script>
+</body>
+</html>

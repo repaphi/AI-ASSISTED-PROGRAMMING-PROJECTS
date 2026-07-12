@@ -1,0 +1,22 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='850' height='650' viewBox='0 0 850 650'>
+<style>text{font-family:Arial;font-size:13px}.b{stroke:#174ea6;stroke-width:7}.c{fill:#222}</style>
+<text x='30' y='30' font-size='18'>Preliminary Floor Framing Plan - As Built Grid Sample</text>
+<line class='b' x1='65.0' y1='540.0' x2='397.5' y2='540.0'/><text x='231.25' y='531.0'>B1</text>
+<line class='b' x1='397.5' y1='540.0' x2='730.0' y2='540.0'/><text x='563.75' y='531.0'>B2</text>
+<line class='b' x1='65.0' y1='65.0' x2='397.5' y2='65.0'/><text x='231.25' y='56.0'>B3</text>
+<line class='b' x1='397.5' y1='65.0' x2='730.0' y2='65.0'/><text x='563.75' y='56.0'>B4</text>
+<line class='b' x1='65.0' y1='540.0' x2='65.0' y2='65.0'/><text x='65.0' y='293.5'>B5</text>
+<line class='b' x1='397.5' y1='540.0' x2='397.5' y2='65.0'/><text x='397.5' y='293.5'>B6</text>
+<line class='b' x1='730.0' y1='540.0' x2='730.0' y2='65.0'/><text x='730.0' y='293.5'>B7</text>
+<rect class='c' x='57.0' y='532.0' width='16' height='16'/><text x='75.0' y='530.0'>C8</text>
+<rect class='c' x='389.5' y='532.0' width='16' height='16'/><text x='407.5' y='530.0'>C9</text>
+<rect class='c' x='722.0' y='532.0' width='16' height='16'/><text x='740.0' y='530.0'>C10</text>
+<rect class='c' x='57.0' y='57.0' width='16' height='16'/><text x='75.0' y='55.0'>C11</text>
+<rect class='c' x='389.5' y='57.0' width='16' height='16'/><text x='407.5' y='55.0'>C12</text>
+<rect class='c' x='722.0' y='57.0' width='16' height='16'/><text x='740.0' y='55.0'>C13</text>
+<text x='65.0' y='568.0'>1</text>
+<text x='397.5' y='568.0'>2</text>
+<text x='730.0' y='568.0'>3</text>
+<text x='35' y='540.0'>A</text>
+<text x='35' y='65.0'>B</text>
+</svg>

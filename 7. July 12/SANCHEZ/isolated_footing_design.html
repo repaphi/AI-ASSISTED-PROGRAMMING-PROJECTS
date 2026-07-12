@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isolated Footing Design — NSCP Calculation Sheet</title>
+<style>
+  :root{
+    --navy:#0B2A45;
+    --navy-deep:#081D30;
+    --blueline:#5B9BC7;
+    --paper:#F6F3EA;
+    --paper-line:#D8CFB8;
+    --ink:#1B2733;
+    --ink-soft:#4A5A68;
+    --amber:#C97A2B;
+    --pass:#2F7D53;
+    --fail:#B23A2E;
+    --mono: "Courier New", Courier, monospace;
+    --serif: Georgia, "Cambria", "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--navy-deep);
+    font-family:var(--sans);
+    color:var(--ink);
+  }
+
+  /* ---------- TITLE BLOCK (mimics a structural drawing title block) ---------- */
+  .titleblock{
+    background:var(--navy);
+    color:#EAF1F7;
+    padding:18px 24px 14px;
+    border-bottom:4px solid var(--amber);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .titleblock h1{
+    font-family:var(--serif);
+    font-size:1.5rem;
+    letter-spacing:0.04em;
+    margin:0 0 4px;
+    font-weight:700;
+  }
+  .titleblock .subtitle{
+    font-size:0.8rem;
+    color:var(--blueline);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .tb-fields{
+    display:grid;
+    grid-template-columns:repeat(3, auto);
+    gap:2px 22px;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    color:#C9D8E4;
+    text-align:right;
+  }
+  .tb-fields span b{color:#fff; font-weight:700;}
+
+  /* ---------- SHEET TABS (like a set of numbered drawing sheets) ---------- */
+  .sheet-tabs{
+    display:flex;
+    background:var(--navy-deep);
+    padding:0 24px;
+    overflow-x:auto;
+    border-bottom:2px solid var(--navy);
+  }
+  .sheet-tabs button{
+    font-family:var(--mono);
+    font-size:0.78rem;
+    letter-spacing:0.03em;
+    background:var(--navy-deep);
+    color:#7E97AB;
+    border:none;
+    border-top:3px solid transparent;
+    padding:12px 18px 10px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .sheet-tabs button .num{color:var(--blueline); font-weight:700; margin-right:6px;}
+  .sheet-tabs button.active{
+    background:var(--paper);
+    color:var(--ink);
+    border-top:3px solid var(--amber);
+  }
+  .sheet-tabs button.active .num{color:var(--amber);}
+  .sheet-tabs button:not(.active):hover{color:#C9D8E4;}
+
+  /* ---------- MAIN PAPER AREA ---------- */
+  main{
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(91,155,199,0.10) 0, rgba(91,155,199,0.10) 1px, transparent 1px, transparent 28px),
+      repeating-linear-gradient(90deg, rgba(91,155,199,0.10) 0, rgba(91,155,199,0.10) 1px, transparent 1px, transparent 28px);
+    min-height:70vh;
+    padding:26px 24px 60px;
+  }
+  .sheet{display:none; max-width:1080px; margin:0 auto;}
+  .sheet.active{display:block; animation:fadein 0.15s ease-in;}
+  @keyframes fadein{from{opacity:0;} to{opacity:1;}}
+
+  h2.sheet-title{
+    font-family:var(--serif);
+    font-size:1.15rem;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:6px;
+    margin:0 0 18px;
+  }
+
+  fieldset{
+    border:1px solid var(--paper-line);
+    background:rgba(255,255,255,0.55);
+    border-radius:2px;
+    margin-bottom:16px;
+    padding:14px 18px 16px;
+  }
+  legend{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:0 6px;
+  }
+  .field-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:10px 24px;
+  }
+  .field{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .field label{font-size:0.85rem; color:var(--ink);}
+  .field input{
+    width:110px;
+    padding:5px 7px;
+    font-family:var(--mono);
+    font-size:0.85rem;
+    border:1px solid #9FAFBB;
+    border-radius:2px;
+    background:#fff;
+    text-align:right;
+  }
+  .field input:focus{outline:2px solid var(--blueline); border-color:var(--blueline);}
+  .hint{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    background:rgba(91,155,199,0.12);
+    border-left:3px solid var(--blueline);
+    padding:8px 12px;
+    margin:6px 0 18px;
+  }
+
+  .btn{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:0.9rem;
+    padding:10px 20px;
+    border:none;
+    border-radius:3px;
+    cursor:pointer;
+    color:#fff;
+    background:var(--navy);
+  }
+  .btn:hover{background:#123A5E;}
+  .btn.amber{background:var(--amber);}
+  .btn.amber:hover{background:#B06A20;}
+  .btn.ghost{background:transparent; color:var(--navy); border:1px solid var(--navy);}
+  .btn.ghost:hover{background:rgba(11,42,69,0.06);}
+  .btn-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;}
+
+  .status-banner{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:0.95rem;
+    padding:10px 16px;
+    border-radius:3px;
+    margin-bottom:16px;
+    display:inline-block;
+  }
+  .status-banner.pass{background:rgba(47,125,83,0.12); color:var(--pass); border:1px solid var(--pass);}
+  .status-banner.fail{background:rgba(178,58,46,0.12); color:var(--fail); border:1px solid var(--fail);}
+  .status-banner.neutral{background:rgba(91,155,199,0.12); color:var(--ink-soft); border:1px solid var(--blueline);}
+
+  pre.calc-log{
+    font-family:var(--mono);
+    font-size:0.82rem;
+    line-height:1.5;
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-left:4px solid var(--blueline);
+    padding:16px 18px;
+    white-space:pre-wrap;
+    overflow-x:auto;
+    max-height:65vh;
+    overflow-y:auto;
+  }
+  .theory-body{
+    font-size:0.92rem;
+    line-height:1.65;
+  }
+  .theory-body h3{
+    font-family:var(--serif);
+    font-size:1rem;
+    margin:20px 0 6px;
+    color:var(--navy);
+  }
+  .theory-body code{
+    font-family:var(--mono);
+    background:rgba(91,155,199,0.14);
+    padding:1px 5px;
+    border-radius:2px;
+  }
+  .formula{
+    font-family:var(--mono);
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-left:3px solid var(--amber);
+    padding:8px 12px;
+    margin:8px 0;
+    font-size:0.85rem;
+  }
+
+  .viz-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  @media (max-width:800px){ .viz-grid{grid-template-columns:1fr;} }
+  .viz-panel{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:3px;
+    padding:14px;
+  }
+  .viz-panel h4{
+    font-family:var(--mono);
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+  canvas{width:100%; height:auto; display:block; background:#FCFBF7; border:1px solid var(--paper-line);}
+  .legend{font-size:0.75rem; color:var(--ink-soft); margin-top:8px;}
+  .legend .swatch{display:inline-block; width:10px; height:10px; margin-right:5px; vertical-align:middle;}
+
+  table.summary{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.88rem;
+    margin-top:10px;
+  }
+  table.summary td{
+    padding:6px 10px;
+    border-bottom:1px solid var(--paper-line);
+  }
+  table.summary td:first-child{color:var(--ink-soft); width:55%;}
+  table.summary td:last-child{font-family:var(--mono); font-weight:700; text-align:right;}
+  .pass-text{color:var(--pass);}
+  .fail-text{color:var(--fail);}
+
+  footer{
+    text-align:center;
+    font-size:0.72rem;
+    color:#7E97AB;
+    background:var(--navy-deep);
+    padding:14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="titleblock">
+  <div>
+    <div class="subtitle">NSCP 2015 · Reinforced Concrete Footing Design</div>
+    <h1>Isolated Footing Design Tutor</h1>
+  </div>
+  <div class="tb-fields">
+    <span>SHEET <b>S-01 / S-05</b></span>
+    <span>CODE <b>NSCP 2015 (ACI 318-14 basis)</b></span>
+    <span>UNITS <b>kN · m · MPa</b></span>
+    <span>PROJECT <b>ISOLATED FOOTING</b></span>
+    <span>TYPE <b>PAD / SPREAD FOOTING</b></span>
+    <span>SCALE <b>NOT TO SCALE</b></span>
+  </div>
+</div>
+
+<nav class="sheet-tabs" id="tabs">
+  <button data-target="sheet-inputs" class="active"><span class="num">S-01</span>INPUTS</button>
+  <button data-target="sheet-theory"><span class="num">S-02</span>THEORY</button>
+  <button data-target="sheet-results"><span class="num">S-03</span>RESULTS</button>
+  <button data-target="sheet-viz"><span class="num">S-04</span>VISUALIZATION</button>
+  <button data-target="sheet-staad"><span class="num">S-05</span>STAAD EXPORT</button>
+</nav>
+
+<main>
+
+  <!-- ============================= SHEET S-01: INPUTS ============================= -->
+  <section class="sheet active" id="sheet-inputs">
+    <h2 class="sheet-title">S-01 — Input Data</h2>
+
+    <fieldset>
+      <legend>Site / Lot</legend>
+      <div class="field-grid">
+        <div class="field"><label>Lot area (m²)</label><input type="number" id="lot_area" value="150" step="any"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Column / Loads</legend>
+      <div class="field-grid">
+        <div class="field"><label>Column width, c1 (m)</label><input type="number" id="col_width" value="0.40" step="any"></div>
+        <div class="field"><label>Column length, c2 (m)</label><input type="number" id="col_length" value="0.40" step="any"></div>
+        <div class="field"><label>Service Dead Load, PD (kN)</label><input type="number" id="P_dead" value="600" step="any"></div>
+        <div class="field"><label>Service Live Load, PL (kN)</label><input type="number" id="P_live" value="300" step="any"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Soil</legend>
+      <div class="field-grid">
+        <div class="field"><label>Moisture content, w (%)</label><input type="number" id="moisture_content" value="22" step="any"></div>
+        <div class="field"><label>Liquid Limit, LL (%)</label><input type="number" id="LL" value="45" step="any"></div>
+        <div class="field"><label>Plastic Limit, PL (%)</label><input type="number" id="PL" value="22" step="any"></div>
+        <div class="field"><label>Allowable bearing capacity, qa (kPa)</label><input type="number" id="qa_given" value="190" step="any"></div>
+        <div class="field"><label>(if estimating) Cohesion, c (kPa)</label><input type="number" id="cohesion" value="10" step="any"></div>
+        <div class="field"><label>(if estimating) Friction angle, φ (deg)</label><input type="number" id="friction_ang" value="28" step="any"></div>
+        <div class="field"><label>(if estimating) Soil unit weight (kN/m³)</label><input type="number" id="gamma_soil" value="18" step="any"></div>
+        <div class="field"><label>Depth of footing base, Df (m)</label><input type="number" id="Df" value="1.20" step="any"></div>
+      </div>
+      <p class="hint">Set <b>qa</b> to 0 to have the sheet ESTIMATE it from cohesion / friction angle / unit weight using Terzaghi's bearing capacity equation instead of a geotechnical-report value.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Materials / Factor of Safety</legend>
+      <div class="field-grid">
+        <div class="field"><label>Factor of Safety (bearing)</label><input type="number" id="FS" value="3.0" step="any"></div>
+        <div class="field"><label>Concrete strength, f'c (MPa)</label><input type="number" id="fc" value="21" step="any"></div>
+        <div class="field"><label>Steel yield strength, fy (MPa)</label><input type="number" id="fy" value="415" step="any"></div>
+        <div class="field"><label>Unit weight of concrete (kN/m³)</label><input type="number" id="gamma_conc" value="23.5" step="any"></div>
+        <div class="field"><label>Override thickness h (m) — blank = auto</label><input type="number" id="h_override" value="" step="any" placeholder="auto"></div>
+      </div>
+    </fieldset>
+
+    <div class="btn-row">
+      <button class="btn amber" id="runBtn">▶ Run Design</button>
+      <button class="btn ghost" id="resetBtn">Reset to Defaults</button>
+    </div>
+  </section>
+
+  <!-- ============================= SHEET S-02: THEORY ============================= -->
+  <section class="sheet" id="sheet-theory">
+    <h2 class="sheet-title">S-02 — Design Theory</h2>
+    <div class="theory-body">
+      <p>An <b>isolated (pad) footing</b> supports a single column and spreads its load over a large enough soil area that the soil doesn't fail or settle too much. NSCP footing design generally proceeds through the steps below.</p>
+
+      <h3>(a) Soil classification — context, not a direct formula</h3>
+      <p>Atterberg limits tell us how "clayey" or "plastic" the soil is:</p>
+      <div class="formula">Plasticity Index, PI = LL − PL</div>
+      <p>A high PI (say, above 20) suggests a compressible clay that is more sensitive to moisture, meaning settlement can matter as much as bearing capacity. Moisture content and Atterberg limits do <b>not</b> plug directly into the bearing-capacity formula — they classify the soil and sanity-check the qa value from the geotechnical report.</p>
+
+      <h3>(b) Size the footing for service (unfactored) loads</h3>
+      <p>We use actual, not factored, loads because soil pressure is a <b>serviceability</b> check, not a strength check:</p>
+      <div class="formula">P = PD + PL &nbsp;&nbsp;→&nbsp;&nbsp; A_req = P / q_net_allow</div>
+      <p>where <code>q_net_allow</code> already has the Factor of Safety baked in (qa = q_ultimate / FS), minus the weight of soil/footing displaced:</p>
+      <div class="formula">q_net_allow = qa − γ_conc × Df</div>
+
+      <h3>(c) Check strength (factored loads) for the concrete itself</h3>
+      <p>Once the plan size is fixed, factor the loads (NSCP 203 load combination) to get the soil pressure used for concrete design:</p>
+      <div class="formula">Pu = 1.2·PD + 1.6·PL &nbsp;&nbsp;→&nbsp;&nbsp; qu = Pu / A_footing</div>
+
+      <h3>(d) Two-way (punching) shear check</h3>
+      <p>The column tries to "punch" through the footing like a stamp through paper. NSCP checks shear on a critical perimeter located d/2 from the column face (d = effective depth):</p>
+      <div class="formula">bo = perimeter of critical section &nbsp;&nbsp;→&nbsp;&nbsp; Vc = 0.33·λ·√f'c·bo·d</div>
+      <p>This is usually the <b>governing</b> (most critical) check for isolated footings.</p>
+
+      <h3>(e) One-way (beam) shear check</h3>
+      <p>The footing also cantilevers off each column face like a wide beam. Critical section is at distance d from the column face:</p>
+      <div class="formula">Vc = 0.17·λ·√f'c·b·d</div>
+
+      <h3>(f) Flexure (bending) design</h3>
+      <p>Bending moment is taken at the face of the column (cantilever action), then solved like a normal RC beam section for required steel:</p>
+      <div class="formula">Mu = qu·b·(L_cant)² / 2 &nbsp;&nbsp;→&nbsp;&nbsp; Rn = Mu /(φ·b·d²) &nbsp;&nbsp;→&nbsp;&nbsp; ρ, As</div>
+
+      <h3>(g) Minimum steel &amp; bar spacing</h3>
+      <p>Footings need at least the shrinkage/temperature steel ratio (0.0018 for grade 415 steel, NSCP 407.6.1) even if flexure needs less.</p>
+
+      <p>Run the design on <b>S-01</b> to see every one of these formulas re-computed with your own numbers on <b>S-03</b>.</p>
+    </div>
+  </section>
+
+  <!-- ============================= SHEET S-03: RESULTS ============================= -->
+  <section class="sheet" id="sheet-results">
+    <h2 class="sheet-title">S-03 — Calculation Log &amp; Summary</h2>
+    <div id="statusBanner" class="status-banner neutral">Run the design on S-01 to see results here.</div>
+    <div id="summaryTableWrap"></div>
+    <pre class="calc-log" id="calcLog">Nothing computed yet.</pre>
+    <div class="btn-row">
+      <button class="btn ghost" id="downloadLogBtn">Download calculation log (.txt)</button>
+    </div>
+  </section>
+
+  <!-- ============================= SHEET S-04: VISUALIZATION ============================= -->
+  <section class="sheet" id="sheet-viz">
+    <h2 class="sheet-title">S-04 — Footing Plan &amp; 3D Model</h2>
+    <div class="viz-grid">
+      <div class="viz-panel">
+        <h4>Plan View (top-down)</h4>
+        <canvas id="planCanvas" width="480" height="480"></canvas>
+        <div class="legend">
+          <span class="swatch" style="background:#d9d9d9;border:1px solid #999;"></span>Footing outline
+          <span class="swatch" style="background:#8c8c8c;"></span>Column footprint
+          <span class="swatch" style="background:#B23A2E;"></span>Bars (dir. 1)
+          <span class="swatch" style="background:#4C8DB8;"></span>Bars (dir. 2)
+        </div>
+      </div>
+      <div class="viz-panel">
+        <h4>3D Isometric — Footing + Column Stub</h4>
+        <canvas id="isoCanvas" width="480" height="480"></canvas>
+        <div class="legend">Drawn to scale relative to footing plan dimensions and thickness.</div>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:16px;">Run the design on S-01 first — both views redraw automatically every time you re-run.</p>
+  </section>
+
+  <!-- ============================= SHEET S-05: STAAD EXPORT ============================= -->
+  <section class="sheet" id="sheet-staad">
+    <h2 class="sheet-title">S-05 — STAAD.Pro 2025 / OpenSTAAD Export</h2>
+    <p class="theory-body">
+      A browser page cannot open a Windows COM connection directly, so this sheet can't call STAAD.Pro live.
+      Instead, click below to generate a ready-to-run Python snippet with <b>your computed footing geometry
+      already filled in</b>. Save it, then run it locally on a Windows machine with STAAD.Pro 2025 open
+      (model already loaded) and <code>pywin32</code> installed (<code>pip install pywin32</code>).
+    </p>
+    <div class="btn-row">
+      <button class="btn amber" id="staadBtn">⇪ Generate STAAD Python Script</button>
+    </div>
+    <pre class="calc-log" id="staadLog" style="margin-top:16px;">Run the design on S-01 first, then generate the script here.</pre>
+    <div class="btn-row">
+      <button class="btn ghost" id="downloadStaadBtn" disabled>Download staad_export.py</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Learning tool only — simplified NSCP/ACI 318 logic for concentric axial loads on square pad footings. Always have a licensed structural engineer check real designs.
+</footer>
+
+<script>
+/* ============================================================================
+   DESIGN ENGINE
+   Same formulas/logic as the Python CLI and desktop-app versions of this
+   tutor — verified to produce identical numbers for the same inputs.
+   ============================================================================ */
+
+function terzaghiQult(c, phiDeg, gamma, Df, B, shape) {
+  shape = shape || "square";
+  const phi = phiDeg * Math.PI / 180;
+  let Nq, Nc, Ngamma;
+  if (phiDeg === 0) {
+    Nq = 1.0; Nc = 5.7; Ngamma = 0.0;
+  } else {
+    Nq = Math.exp(2 * Math.PI * (0.75 - phiDeg / 360) * Math.tan(phi)) /
+         (2 * Math.pow(Math.cos((45 + phiDeg / 2) * Math.PI / 180), 2));
+    Nc = (Nq - 1) / Math.tan(phi);
+    Ngamma = (Nq - 1) * Math.tan(1.4 * phi);
+  }
+  const Sc = shape === "square" ? 1.3 : 1.0;
+  const Sgamma = shape === "square" ? 0.8 : 1.0;
+  const qult = c * Nc * Sc + gamma * Df * Nq + 0.5 * gamma * B * Ngamma * Sgamma;
+  return { qult, Nc, Nq, Ngamma };
+}
+
+function firstTrialThickness(B) {
+  const h = Math.max(B / 6, 0.30);
+  return Math.ceil(h * 40) / 40;
+}
+
+function rhoFromRn(Rn, fc, fy) {
+  const term = 1 - (2 * Rn) / (0.85 * fc);
+  if (term < 0) return 0.0;
+  return (0.85 * fc / fy) * (1 - Math.sqrt(term));
+}
+
+function fmt(n, d) { return Number(n).toFixed(d === undefined ? 2 : d); }
+
+// Runs the full design and returns { results, log } — `log` is the
+// step-by-step calculation text shown on Sheet S-03.
+function designFooting(data) {
+  const log = [];
+  const p = (s) => log.push(s);
+  const results = Object.assign({}, data);
+
+  const P_service = data.P_dead + data.P_live;
+  p(`(b) Service load:  P = PD + PL = ${data.P_dead} + ${data.P_live} = ${fmt(P_service)} kN`);
+
+  let qa;
+  if (data.qa_given > 0) {
+    qa = data.qa_given;
+    p(`    Using geotech-report allowable bearing capacity: qa = ${fmt(qa)} kPa (FS = ${data.FS} already applied by geotech engineer)`);
+  } else {
+    let B_trial = Math.sqrt(P_service / 150.0);
+    let qa_trial, qult, factors;
+    for (let i = 0; i < 20; i++) {
+      const r = terzaghiQult(data.cohesion, data.friction_ang, data.gamma_soil, data.Df, B_trial, "square");
+      qult = r.qult; factors = r;
+      qa_trial = qult / data.FS;
+      const A_trial = P_service / (qa_trial - data.gamma_conc * data.Df);
+      const B_new = Math.sqrt(A_trial);
+      if (Math.abs(B_new - B_trial) < 0.001) { B_trial = B_new; break; }
+      B_trial = B_new;
+    }
+    qa = qa_trial;
+    p(`    Terzaghi factors for phi = ${data.friction_ang} deg: Nc=${fmt(factors.Nc)}, Nq=${fmt(factors.Nq)}, Ngamma=${fmt(factors.Ngamma)}`);
+    p(`    qult = c*Nc*Sc + gamma*Df*Nq + 0.5*gamma*B*Ngamma*Sgamma = ${fmt(qult)} kPa`);
+    p(`    qa = qult / FS = ${fmt(qult)} / ${data.FS} = ${fmt(qa)} kPa`);
+  }
+
+  const q_net_allow = qa - data.gamma_conc * data.Df;
+  p(`    Net allowable pressure: q_net = qa - gamma_conc*Df = ${fmt(qa)} - ${fmt(data.gamma_conc)}*${fmt(data.Df)} = ${fmt(q_net_allow)} kPa`);
+
+  const A_req = P_service / q_net_allow;
+  p(`    Required footing area: A_req = P / q_net = ${fmt(P_service)} / ${fmt(q_net_allow)} = ${fmt(A_req, 3)} m^2`);
+
+  const B = Math.ceil(Math.sqrt(A_req) * 20) / 20;
+  const L = B;
+  const A_provided = B * L;
+  p(`    -> Provide a SQUARE footing: B = L = ${fmt(B)} m (A_provided = ${fmt(A_provided, 3)} m^2 >= A_req)`);
+
+  const lot_check = A_provided < data.lot_area ? "OK, fits within lot" : "WARNING: footing area exceeds lot area, revisit layout!";
+  p(`    Sanity check vs. lot area (${data.lot_area} m^2): ${lot_check}`);
+
+  const Pu = 1.2 * data.P_dead + 1.6 * data.P_live;
+  const qu = Pu / A_provided;
+  p("");
+  p(`(c) Factored load: Pu = 1.2*PD + 1.6*PL = 1.2*${data.P_dead} + 1.6*${data.P_live} = ${fmt(Pu)} kN`);
+  p(`    Factored (upward) soil pressure: qu = Pu / A_provided = ${fmt(Pu)} / ${fmt(A_provided, 3)} = ${fmt(qu)} kPa`);
+
+  const h_override = data.h_override;
+  const h = (h_override && h_override > 0) ? h_override : firstTrialThickness(B);
+  const cover = 0.075, bar_dia_est = 0.016;
+  const d = h - cover - bar_dia_est / 2;
+  const src = (h_override && h_override > 0) ? "user override" : "auto rule-of-thumb (h ~ B/6, min 300mm)";
+  p("");
+  p(`    Trial total footing thickness, h = ${fmt(h * 1000, 0)} mm [${src}]`);
+  p(`    Effective depth d = h - cover - db/2 = ${fmt(d * 1000, 0)} mm`);
+
+  const c1 = data.col_width, c2 = data.col_length;
+  const bo = 2 * (c1 + d) + 2 * (c2 + d);
+  const Vu_punch = qu * (A_provided - (c1 + d) * (c2 + d));
+  const Vc_punch = 0.33 * Math.sqrt(data.fc) * bo * d * 1000;
+  const phi_shear = 0.75;
+  const Vc_punch_capacity = phi_shear * Vc_punch;
+  p("");
+  p("(d) TWO-WAY (PUNCHING) SHEAR CHECK");
+  p(`    Critical perimeter, bo = 2(c1+d) + 2(c2+d) = ${fmt(bo, 3)} m`);
+  p(`    Vu = qu*(A - (c1+d)(c2+d)) = ${fmt(Vu_punch)} kN`);
+  p(`    Vc = 0.33*sqrt(f'c)*bo*d = ${fmt(Vc_punch)} kN`);
+  p(`    phi*Vc = ${phi_shear}*${fmt(Vc_punch)} = ${fmt(Vc_punch_capacity)} kN`);
+  const punch_ok = Vc_punch_capacity >= Vu_punch;
+  p(`    Check: phi*Vc ${punch_ok ? ">=" : "<"} Vu  ->  ${punch_ok ? "OK" : "NOT OK -> increase thickness h"}`);
+
+  const cant = (B - c1) / 2;
+  const x_crit = cant - d;
+  const Vu_beam = qu * L * Math.max(x_crit, 0);
+  const Vc_beam_kN = 0.17 * Math.sqrt(data.fc) * (L * 1000) * (d * 1000) / 1000;
+  const Vc_beam_capacity = phi_shear * Vc_beam_kN;
+  p("");
+  p("(e) ONE-WAY (BEAM) SHEAR CHECK");
+  p(`    Cantilever beyond column face = (B - c1)/2 = ${fmt(cant, 3)} m`);
+  p(`    Critical section at distance d from face -> x_crit = ${fmt(x_crit, 3)} m`);
+  p(`    Vu = qu * L * x_crit = ${fmt(Vu_beam)} kN`);
+  p(`    Vc = 0.17*sqrt(f'c)*b*d = ${fmt(Vc_beam_kN)} kN`);
+  p(`    phi*Vc = ${fmt(Vc_beam_capacity)} kN`);
+  const beam_shear_ok = Vc_beam_capacity >= Vu_beam;
+  p(`    Check: phi*Vc ${beam_shear_ok ? ">=" : "<"} Vu  ->  ${beam_shear_ok ? "OK" : "NOT OK -> increase thickness h"}`);
+
+  const Mu = qu * L * Math.pow(cant, 2) / 2;
+  const phi_flex = 0.90;
+  const Rn = (Mu * 1e6) / (phi_flex * (L * 1000) * Math.pow(d * 1000, 2));
+  const rho = rhoFromRn(Rn, data.fc, data.fy);
+  const rho_min = 0.0018;
+  const rho_use = Math.max(rho, rho_min);
+  const As = rho_use * (L * 1000) * (d * 1000);
+  p("");
+  p("(f) FLEXURAL (BENDING) DESIGN");
+  p(`    Mu = qu * L * (cantilever)^2 / 2 = ${fmt(qu)}*${fmt(L)}*${fmt(cant, 3)}^2/2 = ${fmt(Mu)} kN.m`);
+  p(`    Rn = Mu / (phi*b*d^2) = ${fmt(Rn, 4)} MPa`);
+  p(`    rho required (from Rn) = ${fmt(rho, 5)}   |   rho_min = ${rho_min}`);
+  p(`    rho used = max(rho, rho_min) = ${fmt(rho_use, 5)}`);
+  p(`    As required = rho*b*d = ${fmt(As, 1)} mm^2 (total, across full width L)`);
+
+  const bar_dia = 16;
+  const bar_area = Math.PI / 4 * bar_dia ** 2;
+  const n_bars = Math.ceil(As / bar_area);
+  const spacing = n_bars > 1 ? (L * 1000 - 2 * cover * 1000) / (n_bars - 1) : 0;
+  p(`    Using ${bar_dia}mm bars (area = ${fmt(bar_area, 1)} mm^2 each): need ${n_bars} bars, spaced at ~${fmt(spacing, 0)} mm o.c. each way`);
+
+  Object.assign(results, {
+    P_service, qa, q_net_allow, A_req, B, L, A_provided, Pu, qu, h, d,
+    punch_ok, beam_shear_ok, Mu, As, bar_dia, n_bars, spacing,
+    Vu_punch, Vc_punch_capacity, Vu_beam, Vc_beam_capacity,
+  });
+
+  p("");
+  p("-".repeat(70));
+  p("DESIGN SUMMARY");
+  p("-".repeat(70));
+  p(`Footing size            : ${fmt(B)} m x ${fmt(L)} m x ${fmt(h * 1000, 0)} mm thick`);
+  p(`Provided area           : ${fmt(A_provided, 3)} m^2  (required ${fmt(A_req, 3)} m^2)`);
+  p(`Net allowable pressure  : ${fmt(q_net_allow)} kPa`);
+  p(`Factored bearing pressure qu : ${fmt(qu)} kPa`);
+  p(`Punching shear          : ${punch_ok ? "PASS" : "FAIL"}`);
+  p(`One-way (beam) shear    : ${beam_shear_ok ? "PASS" : "FAIL"}`);
+  p(`Main reinforcement      : ${n_bars}-${bar_dia}mm bars @ ${fmt(spacing, 0)} mm o.c., each way`);
+  p("-".repeat(70));
+  if (!(punch_ok && beam_shear_ok)) {
+    p("NOTE: a shear check FAILED. Go back to S-01, enter a larger 'Override");
+    p("thickness h' value, and click Run Design again.");
+  }
+
+  return { results, log: log.join("\n") };
+}
+
+/* ============================================================================
+   VISUALIZATION — plain <canvas> 2D plan + hand-rolled isometric 3D
+   (no external libraries, so this page works completely offline)
+   ============================================================================ */
+function drawPlan(results) {
+  const canvas = document.getElementById("planCanvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const { B, L, col_width: c1, col_length: c2 } = results;
+  const margin = 40;
+  const scale = Math.min((W - margin * 2) / B, (H - margin * 2) / L);
+  const ox = W / 2, oy = H / 2;
+
+  function toPx(x, y) { return [ox + x * scale, oy - y * scale]; }
+
+  // footing
+  const [fx0, fy0] = toPx(-B / 2, L / 2);
+  ctx.fillStyle = "#d9d9d9";
+  ctx.strokeStyle = "#1B2733";
+  ctx.lineWidth = 2;
+  ctx.fillRect(fx0, fy0, B * scale, L * scale);
+  ctx.strokeRect(fx0, fy0, B * scale, L * scale);
+
+  // rebar hints
+  const nHint = 8;
+  ctx.lineWidth = 1;
+  for (let i = 1; i < nHint; i++) {
+    const y = -L / 2 + (i * L) / nHint;
+    const [x1, yy] = toPx(-B / 2 + 0.05, y);
+    const [x2] = toPx(B / 2 - 0.05, y);
+    ctx.strokeStyle = "#B23A2E";
+    ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke();
+  }
+  for (let i = 1; i < nHint; i++) {
+    const x = -B / 2 + (i * B) / nHint;
+    const [xx, y1] = toPx(x, L / 2 - 0.05);
+    const [, y2] = toPx(x, -L / 2 + 0.05);
+    ctx.strokeStyle = "#4C8DB8";
+    ctx.beginPath(); ctx.moveTo(xx, y1); ctx.lineTo(xx, y2); ctx.stroke();
+  }
+
+  // column footprint
+  const [cx0, cy0] = toPx(-c1 / 2, c2 / 2);
+  ctx.fillStyle = "#8c8c8c";
+  ctx.strokeStyle = "#1B2733";
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(cx0, cy0, c1 * scale, c2 * scale);
+  ctx.strokeRect(cx0, cy0, c1 * scale, c2 * scale);
+
+  // label
+  ctx.fillStyle = "#1B2733";
+  ctx.font = "12px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`${B.toFixed(2)}m x ${L.toFixed(2)}m`, ox, H - 14);
+}
+
+function isoPoint(x, y, z, scale, ox, oy) {
+  const rad30 = Math.PI / 6;
+  const sx = (x - y) * Math.cos(rad30);
+  const sy = (x + y) * Math.sin(rad30) - z;
+  return [ox + sx * scale, oy - sy * scale];
+}
+
+function drawIsoBox(ctx, x0, y0, z0, dx, dy, dz, scale, ox, oy, colors) {
+  const combos = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  const V = combos.map(([a, b, c]) => isoPoint(x0 + a * dx, y0 + b * dy, z0 + c * dz, scale, ox, oy));
+  function poly(indices, fill) {
+    ctx.beginPath();
+    indices.forEach((i, idx) => {
+      const [px, py] = V[i];
+      if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(27,39,51,0.5)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  poly([1, 2, 6, 5], colors.side);   // right face
+  poly([2, 3, 7, 6], colors.front);  // front face
+  poly([4, 5, 6, 7], colors.top);    // top face
+}
+
+function drawIso(results) {
+  const canvas = document.getElementById("isoCanvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const { B, L, h, col_width: c1, col_length: c2 } = results;
+  const colH = 0.6;
+  const maxExtent = Math.max(B, L) + colH * 1.6;
+  const scale = (Math.min(W, H) * 0.62) / maxExtent;
+  const ox = W / 2, oy = H * 0.68;
+
+  // footing slab
+  drawIsoBox(ctx, -B / 2, -L / 2, 0, B, L, h, scale, ox, oy, {
+    top: "#c7c7c7", front: "#a3a3a3", side: "#8a8a8a"
+  });
+  // column stub
+  drawIsoBox(ctx, -c1 / 2, -c2 / 2, h, c1, c2, colH, scale, ox, oy, {
+    top: "#9a9a9a", front: "#767676", side: "#616161"
+  });
+
+  ctx.fillStyle = "#1B2733";
+  ctx.font = "12px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`h = ${(h * 1000).toFixed(0)} mm`, ox, H - 14);
+}
+
+/* ============================================================================
+   STAAD EXPORT — generates the OpenSTAAD Python snippet as downloadable text
+   ============================================================================ */
+function staadSnippet(results) {
+  const B = results.B, L = results.L, h = results.h;
+  return `"""
+Auto-generated by the Isolated Footing Design Tutor (HTML app).
+Run this on Windows with STAAD.Pro 2025 OPEN (model already loaded)
+and pywin32 installed:  pip install pywin32
+"""
+import win32com.client as win32
+
+staad = win32.Dispatch("StaadPro.OpenSTAAD")
+geometry = staad.Geometry
+support = staad.Support
+staad.SetSilentMode(1)
+
+# Footing corner nodes (B = ${B.toFixed(2)} m, L = ${L.toFixed(2)} m), base at Y = 0
+n1 = geometry.CreateNode(-${(B/2).toFixed(2)}, 0, -${(L/2).toFixed(2)})
+n2 = geometry.CreateNode( ${(B/2).toFixed(2)}, 0, -${(L/2).toFixed(2)})
+n3 = geometry.CreateNode( ${(B/2).toFixed(2)}, 0,  ${(L/2).toFixed(2)})
+n4 = geometry.CreateNode(-${(B/2).toFixed(2)}, 0,  ${(L/2).toFixed(2)})
+
+plate_id = geometry.CreatePlate(4, [n1, n2, n3, n4])
+print("Created footing plate, ID =", plate_id)
+
+for n in [n1, n2, n3, n4]:
+    support.CreateSupportFixed(n)
+print("Assigned FIXED supports (soil idealization; refine with springs")
+print("if you have a coefficient of subgrade reaction, ks).")
+
+# Footing thickness (h = ${(h*1000).toFixed(0)} mm) should be set as the
+# plate's thickness property in STAAD's Property page.
+print("Done. Switch to STAAD.Pro to see the new geometry.")
+`;
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================================
+   UI WIRING
+   ============================================================================ */
+let currentResults = null;
+
+function switchTab(targetId) {
+  document.querySelectorAll(".sheet").forEach(s => s.classList.toggle("active", s.id === targetId));
+  document.querySelectorAll(".sheet-tabs button").forEach(b => b.classList.toggle("active", b.dataset.target === targetId));
+}
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (btn) switchTab(btn.dataset.target);
+});
+
+const FIELD_IDS = ["lot_area","col_width","col_length","P_dead","P_live",
+  "moisture_content","LL","PL","qa_given","cohesion","friction_ang",
+  "gamma_soil","Df","FS","fc","fy","gamma_conc","h_override"];
+
+const DEFAULTS = {
+  lot_area:"150", col_width:"0.40", col_length:"0.40", P_dead:"600", P_live:"300",
+  moisture_content:"22", LL:"45", PL:"22", qa_given:"190", cohesion:"10",
+  friction_ang:"28", gamma_soil:"18", Df:"1.20", FS:"3.0", fc:"21", fy:"415",
+  gamma_conc:"23.5", h_override:""
+};
+
+function readInputs() {
+  const data = {};
+  for (const id of FIELD_IDS) {
+    const el = document.getElementById(id);
+    const raw = el.value.trim();
+    if (id === "h_override") { data.h_override = raw === "" ? null : parseFloat(raw); continue; }
+    if (raw === "") throw new Error(`"${el.previousElementSibling ? el.previousElementSibling.textContent : id}" is empty — please enter a number.`);
+    const v = parseFloat(raw);
+    if (Number.isNaN(v)) throw new Error(`"${id}" must be a number, got "${raw}".`);
+    data[id] = v;
+  }
+  return data;
+}
+
+function renderSummaryTable(results) {
+  const rows = [
+    ["Footing size", `${results.B.toFixed(2)} m x ${results.L.toFixed(2)} m x ${(results.h*1000).toFixed(0)} mm`],
+    ["Provided area (required)", `${results.A_provided.toFixed(3)} m² (${results.A_req.toFixed(3)} m²)`],
+    ["Net allowable pressure", `${results.q_net_allow.toFixed(2)} kPa`],
+    ["Factored bearing pressure, qu", `${results.qu.toFixed(2)} kPa`],
+    ["Punching shear", results.punch_ok ? "PASS" : "FAIL"],
+    ["One-way (beam) shear", results.beam_shear_ok ? "PASS" : "FAIL"],
+    ["Main reinforcement", `${results.n_bars}-${results.bar_dia}mm @ ${results.spacing.toFixed(0)} mm o.c., EW`],
+  ];
+  let html = '<table class="summary">';
+  for (const [label, val] of rows) {
+    const cls = (val === "PASS") ? "pass-text" : (val === "FAIL") ? "fail-text" : "";
+    html += `<tr><td>${label}</td><td class="${cls}">${val}</td></tr>`;
+  }
+  html += "</table>";
+  document.getElementById("summaryTableWrap").innerHTML = html;
+}
+
+function runDesign() {
+  let data;
+  try {
+    data = readInputs();
+  } catch (e) {
+    alert(e.message);
+    return;
+  }
+  const { results, log } = designFooting(data);
+  currentResults = results;
+
+  document.getElementById("calcLog").textContent = log;
+  renderSummaryTable(results);
+
+  const overallOk = results.punch_ok && results.beam_shear_ok;
+  const banner = document.getElementById("statusBanner");
+  banner.textContent = overallOk
+    ? `ALL CHECKS PASS — ${results.B.toFixed(2)}m x ${results.L.toFixed(2)}m x ${(results.h*1000).toFixed(0)}mm`
+    : `SHEAR CHECK FAILED — increase thickness override on S-01 and re-run`;
+  banner.className = "status-banner " + (overallOk ? "pass" : "fail");
+
+  drawPlan(results);
+  drawIso(results);
+
+  document.getElementById("staadLog").textContent = "Click 'Generate STAAD Python Script' above.";
+  document.getElementById("downloadStaadBtn").disabled = true;
+
+  switchTab("sheet-results");
+}
+
+document.getElementById("runBtn").addEventListener("click", runDesign);
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  for (const id of FIELD_IDS) document.getElementById(id).value = DEFAULTS[id];
+});
+
+document.getElementById("downloadLogBtn").addEventListener("click", () => {
+  const text = document.getElementById("calcLog").textContent;
+  if (!text || text === "Nothing computed yet.") { alert("Run the design first."); return; }
+  downloadText("footing_calculation_log.txt", text);
+});
+
+document.getElementById("staadBtn").addEventListener("click", () => {
+  if (!currentResults) { alert("Run the design on S-01 first."); return; }
+  const snippet = staadSnippet(currentResults);
+  document.getElementById("staadLog").textContent = snippet;
+  document.getElementById("downloadStaadBtn").disabled = false;
+});
+
+document.getElementById("downloadStaadBtn").addEventListener("click", () => {
+  const text = document.getElementById("staadLog").textContent;
+  downloadText("staad_export.py", text);
+});
+</script>
+</body>
+</html>
