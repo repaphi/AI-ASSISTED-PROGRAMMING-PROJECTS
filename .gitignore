@@ -1,0 +1,27 @@
+# Python cache and local runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local app data created by the consultation portal
+data/
+server.log
+server.out.log
+
+# STAAD.Pro generated output and recovery files
+*.App.log
+*.cod
+*.cut
+*.png
+*.REI_Saved_Picture
+*.sbk
+*.slg
+*.std.metadata
+*.uid
+*_AutoRecovery.zip
+
+# Editor and OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
