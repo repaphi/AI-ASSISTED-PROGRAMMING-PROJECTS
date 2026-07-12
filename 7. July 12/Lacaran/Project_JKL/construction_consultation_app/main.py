@@ -3,6 +3,8 @@ import csv
 import io
 import json
 import mimetypes
+import threading
+import webbrowser
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -225,9 +227,23 @@ class AppHandler(BaseHTTPRequestHandler):
 
 
 def run():
-    server = ThreadingHTTPServer((HOST, PORT), AppHandler)
-    print(f"BuildScope Consultation Portal running at http://{HOST}:{PORT}")
-    print("Press Ctrl+C to stop.")
+    url = f"http://{HOST}:{PORT}"
+    try:
+        server = ThreadingHTTPServer((HOST, PORT), AppHandler)
+    except OSError as error:
+        print("")
+        print("BuildScope could not start.", flush=True)
+        print(f"Reason: {error}", flush=True)
+        print(f"If the app is already running, open {url}", flush=True)
+        print("Otherwise close the old terminal or press Ctrl+C, then run this file again.", flush=True)
+        input("Press Enter to close this message...")
+        return
+
+    print("", flush=True)
+    print("BuildScope Consultation Portal is running.", flush=True)
+    print(f"Open this link in your browser: {url}", flush=True)
+    print("Keep this terminal open. Press Ctrl+C here to stop the app.", flush=True)
+    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     server.serve_forever()
 
 
