@@ -1,0 +1,38 @@
+# Python cache and local runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller build artifacts
+build/
+build_tools/
+*.spec
+*.toc
+*.pkg
+*.pyz
+base_library.zip
+xref-*.html
+warn-*.txt
+
+# Local app data created by the consultation portal
+data/
+server.log
+server.out.log
+
+# STAAD.Pro generated output and recovery files
+*.App.log
+*.cod
+*.cut
+*.png
+*.REI_Saved_Picture
+*.sbk
+*.slg
+*.std.metadata
+*.uid
+*_AutoRecovery.zip
+
+# Editor and OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
