@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pad Footing Design — NBCC 2020 / CSA A23.3-19</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --navy:#14283d;
+    --navy-2:#1c3652;
+    --steel:#2f6690;
+    --steel-light:#e7eef4;
+    --bg:#eef1f4;
+    --panel:#ffffff;
+    --border:#d3dae2;
+    --text:#1b2733;
+    --text-dim:#5c6b78;
+    --concrete:#c9c2b4;
+    --rebar:#b03a2e;
+    --ok-bg:#e2f5ea; --ok-fg:#1e824c;
+    --ng-bg:#fdecea; --ng-fg:#b71c1c;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);}
+  .app{display:flex;flex-direction:column;height:100vh;}
+
+  .titlebar{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);
+    color:#fff; padding:10px 20px; display:flex; align-items:baseline; gap:14px;
+    border-bottom:3px solid var(--steel);
+  }
+  .titlebar h1{font-size:16px;font-weight:700;letter-spacing:.04em;margin:0;text-transform:uppercase;}
+  .titlebar .code-basis{font-family:var(--mono);font-size:11px;color:#b9cbdc;letter-spacing:.03em;}
+
+  .body-row{flex:1;display:flex;min-height:0;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:340px;min-width:340px;background:var(--panel);border-right:1px solid var(--border);
+    overflow-y:auto;padding:14px;
+  }
+  .group{
+    border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden;
+  }
+  .group-title{
+    background:var(--steel-light);color:var(--navy);font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.06em;padding:7px 10px;border-bottom:1px solid var(--border);
+  }
+  .group-body{padding:8px 10px;}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;}
+  .field label{font-size:12.5px;color:var(--text-dim);}
+  .field input{
+    width:104px;text-align:right;font-family:var(--mono);font-size:13px;
+    border:1px solid var(--border);border-radius:4px;padding:4px 6px;background:#fbfcfd;color:var(--text);
+  }
+  .field input:focus{outline:2px solid var(--steel);outline-offset:0;border-color:var(--steel);}
+
+  .actions{display:flex;flex-direction:column;gap:8px;padding:4px 0 2px;}
+  button.act{
+    font-family:var(--sans);font-weight:600;font-size:13px;letter-spacing:.02em;
+    padding:9px 10px;border-radius:5px;border:1px solid var(--steel);cursor:pointer;
+    background:var(--steel);color:#fff;transition:background .12s, transform .05s;
+  }
+  button.act:hover{background:#255170;}
+  button.act:active{transform:translateY(1px);}
+  button.act.secondary{background:#fff;color:var(--steel);}
+  button.act.secondary:hover{background:var(--steel-light);}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);}
+  .tab-btn{
+    padding:10px 20px;font-family:var(--sans);font-weight:600;font-size:13px;color:var(--text-dim);
+    background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;
+  }
+  .tab-btn.active{color:var(--navy);border-bottom-color:var(--steel);}
+  .tab-content{flex:1;min-height:0;position:relative;}
+  .tab-pane{display:none;height:100%;overflow-y:auto;padding:18px;}
+  .tab-pane.active{display:block;}
+
+  #view3d-pane{padding:0;overflow:hidden;}
+  #view3d-pane.active{display:flex;flex-direction:column;}
+  .view3d-toolbar{
+    display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  #three-container{flex:1;position:relative;background:#dfe6ec;}
+  #three-container canvas{display:block;}
+  .hint{position:absolute;bottom:10px;left:14px;font-family:var(--mono);font-size:11px;color:#5c6b78;
+    background:rgba(255,255,255,.75);padding:4px 8px;border-radius:4px;}
+
+  .summary-line{font-size:13.5px;margin:2px 0 10px;color:var(--text);}
+  .summary-line b{color:var(--navy);}
+  .summary-line .val{font-family:var(--mono);color:var(--steel);}
+
+  table.results{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px;}
+  table.results th{
+    text-align:left;background:var(--steel-light);color:var(--navy);font-size:11px;text-transform:uppercase;
+    letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--border);
+  }
+  table.results td{padding:7px 10px;border-bottom:1px solid var(--border);}
+  table.results td.value{font-family:var(--mono);}
+  .status-pill{
+    display:inline-block;padding:2px 10px;border-radius:20px;font-family:var(--mono);
+    font-size:11.5px;font-weight:600;letter-spacing:.03em;
+  }
+  .status-pill.ok{background:var(--ok-bg);color:var(--ok-fg);}
+  .status-pill.ng{background:var(--ng-bg);color:var(--ng-fg);}
+
+  .log-box{
+    margin-top:16px;background:#0f1c29;color:#c9d6e2;font-family:var(--mono);font-size:12px;
+    padding:12px;border-radius:6px;white-space:pre-wrap;max-height:220px;overflow-y:auto;line-height:1.5;
+  }
+  .section-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);
+    font-weight:700;margin:14px 0 4px;}
+
+  .note{
+    font-size:12px;color:var(--text-dim);border-left:3px solid var(--steel);padding:8px 10px;
+    background:var(--steel-light);border-radius:0 4px 4px 0;margin-top:14px;
+  }
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#c3ccd4;border-radius:5px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="titlebar">
+    <h1>Pad Footing Design</h1>
+    <span class="code-basis">NBCC 2020 &nbsp;·&nbsp; CSA A23.3-19</span>
+  </div>
+
+  <div class="body-row">
+    <!-- ============ SIDEBAR ============ -->
+    <div class="sidebar">
+
+      <div class="group">
+        <div class="group-title">A. Loads</div>
+        <div class="group-body">
+          <div class="field"><label>Dead Load, D</label><input id="in_D" type="number" step="1" value="500"><span></span></div>
+          <div class="field"><label>Live Load, L</label><input id="in_L" type="number" step="1" value="250"></div>
+          <div class="field"><label>Wind Load, W</label><input id="in_W" type="number" step="1" value="50"></div>
+          <div class="field"><label>Seismic Load, E</label><input id="in_E" type="number" step="1" value="0"></div>
+          <div class="field"><label>Moment Mx (kN·m)</label><input id="in_Mx" type="number" step="1" value="0"></div>
+          <div class="field"><label>Moment My (kN·m)</label><input id="in_My" type="number" step="1" value="0"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">B. Soil</div>
+        <div class="group-body">
+          <div class="field"><label>Allow. Bearing (kPa)</label><input id="in_qallow" type="number" step="1" value="150"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">C. Materials</div>
+        <div class="group-body">
+          <div class="field"><label>f'c (MPa)</label><input id="in_fc" type="number" step="1" value="25"></div>
+          <div class="field"><label>fy (MPa)</label><input id="in_fy" type="number" step="5" value="400"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">D. Geometry</div>
+        <div class="group-body">
+          <div class="field"><label>Column Width, c1 (mm)</label><input id="in_c1" type="number" step="25" value="400"></div>
+          <div class="field"><label>Column Depth, c2 (mm)</label><input id="in_c2" type="number" step="25" value="400"></div>
+          <div class="field"><label>Init. Thickness, t (mm)</label><input id="in_t" type="number" step="25" value="500"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Actions</div>
+        <div class="group-body actions">
+          <button class="act" id="btn_design">Design Footing</button>
+          <button class="act" id="btn_auto">Auto Size</button>
+          <button class="act secondary" id="btn_3d">Show 3D</button>
+          <button class="act secondary" id="btn_export">Export Results</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ MAIN ============ -->
+    <div class="main">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="results-pane">Results</button>
+        <button class="tab-btn" data-tab="view3d-pane">3D View</button>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="results-pane">
+          <div class="summary-line">Governing load combination: <b id="sum_combo">—</b></div>
+          <div class="summary-line">Footing dimensions (L × B × t): <span class="val" id="sum_dims">—</span></div>
+          <div class="summary-line">Soil pressure (max / min): <span class="val" id="sum_pressure">—</span></div>
+
+          <div class="section-label">Design checks</div>
+          <table class="results">
+            <thead><tr><th>Check</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody id="results_tbody"></tbody>
+          </table>
+
+          <div class="section-label">Calculation log</div>
+          <div class="log-box" id="log_box">Run "Design Footing" or "Auto Size" to begin.</div>
+
+          <div class="note">
+            Simplified NBCC 2020 load combinations and the CSA A23.3 Cl. 11.3.4 simplified one-way
+            shear method are used. Verify against full code provisions (Table 4.1.3.2, General
+            Method) before permit submittal.
+          </div>
+        </div>
+
+        <div class="tab-pane" id="view3d-pane">
+          <div class="view3d-toolbar">
+            <button class="act secondary" id="btn_toggle_rebar" style="width:auto;padding:7px 14px;">Toggle Reinforcement</button>
+          </div>
+          <div id="three-container">
+            <div class="hint">Drag to rotate · scroll to zoom</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   ENGINEERING CALCULATION ENGINE
+   (JavaScript port of design.py — NBCC 2020 / CSA A23.3-19)
+   ========================================================================= */
+
+const BAR_AREAS = { "10M":100,"15M":200,"20M":300,"25M":500,"30M":700,"35M":1000,"45M":1500,"55M":2500 };
+
+function loadCombinations(L){
+  const combos = [];
+  combos.push({name:"1.25D+1.5L", P:1.25*L.D+1.5*L.L, Mx:1.25*L.Mx, My:1.25*L.My, isService:false});
+  combos.push({name:"1.25D+1.5L+0.5W", P:1.25*L.D+1.5*L.L+0.5*L.W, Mx:1.25*L.Mx, My:1.25*L.My, isService:false});
+  combos.push({name:"1.25D+1.5L+0.5E", P:1.25*L.D+1.5*L.L+0.5*L.E, Mx:1.25*L.Mx, My:1.25*L.My, isService:false});
+  combos.push({name:"0.9D+1.5W", P:0.9*L.D+1.5*L.W, Mx:0.9*L.Mx, My:0.9*L.My, isService:false});
+  combos.push({name:"0.9D-1.5W", P:0.9*L.D-1.5*L.W, Mx:0.9*L.Mx, My:0.9*L.My, isService:false});
+  combos.push({name:"0.9D+1.5E", P:0.9*L.D+1.5*L.E, Mx:0.9*L.Mx, My:0.9*L.My, isService:false});
+  combos.push({name:"0.9D-1.5E", P:0.9*L.D-1.5*L.E, Mx:0.9*L.Mx, My:0.9*L.My, isService:false});
+  combos.push({name:"Service D+L", P:L.D+L.L, Mx:L.Mx, My:L.My, isService:true});
+  combos.push({name:"Service D+L+W", P:L.D+L.L+L.W, Mx:L.Mx, My:L.My, isService:true});
+  combos.push({name:"Service D+L+E", P:L.D+L.L+L.E, Mx:L.Mx, My:L.My, isService:true});
+  return combos;
+}
+function governingUltimate(combos){
+  return combos.filter(c=>!c.isService).reduce((a,b)=>Math.abs(b.P)>Math.abs(a.P)?b:a);
+}
+function governingService(combos){
+  return combos.filter(c=>c.isService).reduce((a,b)=>Math.abs(b.P)>Math.abs(a.P)?b:a);
+}
+
+function soilPressure(P,Mx,My,L_mm,B_mm){
+  const L=L_mm/1000, B=B_mm/1000, A=L*B;
+  if (Math.abs(P) < 1e-6) return {qmax:0,qmin:0,eL:0,eB:0,withinKern:true};
+  const eL=(My/P)*1000, eB=(Mx/P)*1000;
+  const withinKern = Math.abs(eL) <= L_mm/6.0 && Math.abs(eB) <= B_mm/6.0;
+  const q0 = P/A;
+  const qFromMy = 6.0*My/(B*L*L);
+  const qFromMx = 6.0*Mx/(L*B*B);
+  const qmax = q0 + Math.abs(qFromMy) + Math.abs(qFromMx);
+  const qmin = q0 - Math.abs(qFromMy) - Math.abs(qFromMx);
+  return {qmax,qmin,eL,eB,withinKern};
+}
+function requiredArea(P,qAllow){ return qAllow>0 ? P/qAllow : 0; }
+
+function alpha1Beta1(fc){
+  const a1 = Math.max(0.85-0.0015*fc, 0.67);
+  const b1 = Math.max(0.97-0.0025*fc, 0.67);
+  return {a1,b1};
+}
+function flexuralDesign(Mu_kNm,b_mm,d_mm,fc,fy,phiC,phiS){
+  const {a1,b1} = alpha1Beta1(fc);
+  const Mu_Nmm = Mu_kNm*1e6;
+  if (Mu_Nmm<=0 || b_mm<=0 || d_mm<=0) return {AsReq:0,a1,b1,Rn:0,note:"No moment demand"};
+  const Rn = Mu_Nmm/(phiS*b_mm*d_mm*d_mm);
+  const term = 1-(2*Rn)/(a1*phiC*fc);
+  if (term<0) return {AsReq:null,a1,b1,Rn,note:"Section inadequate — increase thickness (d)"};
+  const rho = (a1*phiC*fc/(phiS*fy))*(1-Math.sqrt(term));
+  const AsReq = rho*b_mm*d_mm;
+  return {AsReq,rho,a1,b1,Rn,note:"OK"};
+}
+function minimumSteel(b_mm,h_mm){ return 0.002*b_mm*h_mm; }
+
+function selectBarSpacing(AsReqPerM, maxSpacing=450){
+  const bars = Object.entries(BAR_AREAS).sort((a,b)=>a[1]-b[1]);
+  for (const [bar,area] of bars){
+    let spacing = AsReqPerM<=0 ? maxSpacing : (area*1000.0)/AsReqPerM;
+    spacing = Math.min(spacing,maxSpacing);
+    spacing = Math.floor(spacing/25.0)*25.0;
+    if (spacing<75) continue;
+    const providedAs = (area*1000.0)/spacing;
+    if (providedAs>=AsReqPerM) return {bar,spacing};
+  }
+  return {bar:"35M",spacing:100};
+}
+
+function oneWayShear(qu_kPa,b_mm,cantilever_mm,d_mm,fc,phiC,lam=1.0){
+  const xCrit = Math.max(cantilever_mm-d_mm,0.0);
+  const Vf = qu_kPa*(b_mm/1000.0)*(xCrit/1000.0);
+  const Vc = 0.2*lam*phiC*Math.sqrt(fc)*b_mm*d_mm/1000.0;
+  const utilization = Vc>0 ? Vf/Vc : Infinity;
+  return {Vf,Vc,status:Vf<=Vc,utilization,xCrit};
+}
+
+function punchingShear(qu_kPa,L_mm,B_mm,c1_mm,c2_mm,d_mm,fc,phiC,lam=1.0,colLocation="interior"){
+  const betaC = Math.min(c1_mm,c2_mm)>0 ? Math.max(c1_mm,c2_mm)/Math.min(c1_mm,c2_mm) : 1.0;
+  const alphaS = {interior:4,edge:3,corner:2}[colLocation] ?? 4;
+  const b0 = 2*(c1_mm+d_mm)+2*(c2_mm+d_mm);
+  const vc1 = 0.19*(1+2.0/betaC)*lam*phiC*Math.sqrt(fc);
+  const vc2 = 0.19*(alphaS*d_mm/b0+1)*lam*phiC*Math.sqrt(fc);
+  const vc3 = 0.38*lam*phiC*Math.sqrt(fc);
+  const vc = Math.min(vc1,vc2,vc3);
+  const Vc = vc*b0*d_mm/1000.0;
+  const Afooting = (L_mm/1000.0)*(B_mm/1000.0);
+  const Acrit = ((c1_mm+d_mm)/1000.0)*((c2_mm+d_mm)/1000.0);
+  const Vf = qu_kPa*(Afooting-Acrit);
+  const utilization = Vc>0 ? Vf/Vc : Infinity;
+  return {Vf,Vc,b0,betaC,vc,status:Vf<=Vc,utilization};
+}
+
+function autoDesign(loads,soil,mat,geo,maxIter=60){
+  const log=[];
+  const combos = loadCombinations(loads);
+  const svc = governingService(combos);
+  const ult = governingUltimate(combos);
+  log.push(`Governing service combo: ${svc.name}  P=${svc.P.toFixed(1)} kN, Mx=${svc.Mx.toFixed(1)} kN.m, My=${svc.My.toFixed(1)} kN.m`);
+  log.push(`Governing ULS combo: ${ult.name}  P=${ult.P.toFixed(1)} kN, Mx=${ult.Mx.toFixed(1)} kN.m, My=${ult.My.toFixed(1)} kN.m`);
+
+  const Areq = requiredArea(svc.P, soil.qAllow);
+  const side = Math.max(Math.sqrt(Areq), (geo.c1+400)/1000.0);
+  let L_mm = Math.max(geo.L, side*1000.0);
+  let B_mm = Math.max(geo.B, side*1000.0);
+  let t_mm = geo.t;
+
+  const result = {ok:false};
+
+  for (let it=0; it<maxIter; it++){
+    L_mm = Math.ceil(L_mm/50.0)*50.0;
+    B_mm = Math.ceil(B_mm/50.0)*50.0;
+    t_mm = Math.ceil(t_mm/25.0)*25.0;
+
+    const {qmax,qmin,eL,eB,withinKern} = soilPressure(svc.P,svc.Mx,svc.My,L_mm,B_mm);
+
+    if (qmin<0 || !withinKern || qmax>soil.qAllow){
+      L_mm*=1.05; B_mm*=1.05;
+      log.push(`Iter ${it}: bearing/kern NG (qmax=${qmax.toFixed(1)}, qmin=${qmin.toFixed(1)}) -> enlarging plan to ${L_mm.toFixed(0)}x${B_mm.toFixed(0)} mm`);
+      continue;
+    }
+
+    const barDiaAssumed = 20;
+    const d_mm = t_mm - geo.cover - barDiaAssumed;
+
+    const cantL = (L_mm-geo.c1)/2.0;
+    const cantB = (B_mm-geo.c2)/2.0;
+    const quAvg = ult.P/((L_mm/1000.0)*(B_mm/1000.0));
+
+    const MuL = quAvg*(B_mm/1000.0)*Math.pow(cantL/1000.0,2)/2.0;
+    const MuLPerM = MuL/(B_mm/1000.0);
+    const MuB = quAvg*(L_mm/1000.0)*Math.pow(cantB/1000.0,2)/2.0;
+    const MuBPerM = MuB/(L_mm/1000.0);
+
+    const flL = flexuralDesign(MuLPerM,1000.0,d_mm,mat.fc,mat.fy,mat.phiC,mat.phiS);
+    const flB = flexuralDesign(MuBPerM,1000.0,d_mm,mat.fc,mat.fy,mat.phiC,mat.phiS);
+
+    if (flL.AsReq===null || flB.AsReq===null){
+      t_mm+=50;
+      log.push(`Iter ${it}: flexure section inadequate -> increasing thickness to ${t_mm.toFixed(0)} mm`);
+      continue;
+    }
+
+    const AsMin = minimumSteel(1000.0,t_mm);
+    const AsL = Math.max(flL.AsReq,AsMin);
+    const AsB = Math.max(flB.AsReq,AsMin);
+
+    const owL = oneWayShear(quAvg,B_mm,cantL,d_mm,mat.fc,mat.phiC,mat.lam);
+    const owB = oneWayShear(quAvg,L_mm,cantB,d_mm,mat.fc,mat.phiC,mat.lam);
+    const pu = punchingShear(quAvg,L_mm,B_mm,geo.c1,geo.c2,d_mm,mat.fc,mat.phiC,mat.lam,"interior");
+
+    const shearOk = owL.status && owB.status && pu.status;
+    if (!shearOk){
+      t_mm+=50;
+      log.push(`Iter ${it}: shear NG (1-way L util=${owL.utilization.toFixed(2)}, 1-way B util=${owB.utilization.toFixed(2)}, punching util=${pu.utilization.toFixed(2)}) -> increasing thickness to ${t_mm.toFixed(0)} mm`);
+      continue;
+    }
+
+    const {bar:barL, spacing:spL} = selectBarSpacing(AsL);
+    const {bar:barB, spacing:spB} = selectBarSpacing(AsB);
+
+    result.governingCombo = ult.name;
+    result.geometry = {c1:geo.c1,c2:geo.c2,t:t_mm,L:L_mm,B:B_mm,cover:geo.cover};
+    result.qmax=qmax; result.qmin=qmin;
+    result.eB=eB; result.eL=eL; result.withinKern=withinKern;
+    result.AsReqL=AsL; result.AsReqB=AsB;
+    result.barL = `${barL} @ ${spL.toFixed(0)} mm o.c. (long dir.)`;
+    result.barB = `${barB} @ ${spB.toFixed(0)} mm o.c. (short dir.)`;
+    result.oneWayStatus = {longDir:owL.status, shortDir:owB.status};
+    result.punchingStatus = pu.status;
+    result.utilization = {
+      bearing: soil.qAllow>0 ? qmax/soil.qAllow : 0,
+      oneWayLong: owL.utilization,
+      oneWayShort: owB.utilization,
+      punching: pu.utilization,
+    };
+    log.push(`Converged after ${it+1} iteration(s).`);
+    result.log = log;
+    result.ok = true;
+    return result;
+  }
+
+  log.push("Auto-design did NOT converge within iteration limit. Review inputs (loads may be excessive for soil capacity).");
+  result.log = log;
+  result.ok = false;
+  return result;
+}
+
+/* =========================================================================
+   UI WIRING
+   ========================================================================= */
+function gatherInputs(){
+  const loads = {
+    D:parseFloat(document.getElementById('in_D').value)||0,
+    L:parseFloat(document.getElementById('in_L').value)||0,
+    W:parseFloat(document.getElementById('in_W').value)||0,
+    E:parseFloat(document.getElementById('in_E').value)||0,
+    Mx:parseFloat(document.getElementById('in_Mx').value)||0,
+    My:parseFloat(document.getElementById('in_My').value)||0,
+  };
+  const soil = { qAllow: parseFloat(document.getElementById('in_qallow').value)||150 };
+  const mat = { fc:parseFloat(document.getElementById('in_fc').value)||25,
+                fy:parseFloat(document.getElementById('in_fy').value)||400,
+                phiC:0.65, phiS:0.85, lam:1.0 };
+  const c1 = parseFloat(document.getElementById('in_c1').value)||400;
+  const c2 = parseFloat(document.getElementById('in_c2').value)||400;
+  const t  = parseFloat(document.getElementById('in_t').value)||500;
+  const geo = { c1, c2, t, cover:75, L:Math.max(c1+600,1500), B:Math.max(c2+600,1500) };
+  return {loads,soil,mat,geo};
+}
+
+let lastResult = null;
+
+function runDesign(){
+  const {loads,soil,mat,geo} = gatherInputs();
+  const result = autoDesign(loads,soil,mat,geo);
+  lastResult = result;
+  populateResults(result);
+  activateTab('results-pane');
+  if (result.ok) renderScene(result.geometry, result);
+}
+
+function populateResults(result){
+  const logBox = document.getElementById('log_box');
+  if (!result.ok){
+    document.getElementById('sum_combo').textContent = "N/A (did not converge)";
+    document.getElementById('sum_dims').textContent = "N/A";
+    document.getElementById('sum_pressure').textContent = "N/A";
+    document.getElementById('results_tbody').innerHTML = "";
+    logBox.textContent = result.log.join("\n");
+    alert("Auto-design did not converge. See calculation log for details.");
+    return;
+  }
+  const g = result.geometry;
+  document.getElementById('sum_combo').textContent = result.governingCombo;
+  document.getElementById('sum_dims').textContent = `${g.L.toFixed(0)} × ${g.B.toFixed(0)} × ${g.t.toFixed(0)} mm`;
+  document.getElementById('sum_pressure').textContent = `max ${result.qmax.toFixed(1)} kPa   min ${result.qmin.toFixed(1)} kPa`;
+
+  const rows = [
+    ["Bearing pressure utilization", `${(result.utilization.bearing*100).toFixed(0)} %`, result.utilization.bearing<=1.0],
+    ["Eccentricity within middle third", result.withinKern ? "e within kern" : "e OUTSIDE kern", result.withinKern],
+    ["Reinforcement — long direction", result.barL, true],
+    ["Reinforcement — short direction", result.barB, true],
+    ["Reinf. area required, long dir.", `${result.AsReqL.toFixed(0)} mm²/m`, true],
+    ["Reinf. area required, short dir.", `${result.AsReqB.toFixed(0)} mm²/m`, true],
+    ["One-way shear, long direction", `util = ${(result.utilization.oneWayLong*100).toFixed(0)}%`, result.oneWayStatus.longDir],
+    ["One-way shear, short direction", `util = ${(result.utilization.oneWayShort*100).toFixed(0)}%`, result.oneWayStatus.shortDir],
+    ["Punching (two-way) shear", `util = ${(result.utilization.punching*100).toFixed(0)}%`, result.punchingStatus],
+  ];
+
+  const tbody = document.getElementById('results_tbody');
+  tbody.innerHTML = rows.map(([check,value,ok])=>`
+    <tr>
+      <td>${check}</td>
+      <td class="value">${value}</td>
+      <td><span class="status-pill ${ok?'ok':'ng'}">${ok?'OK':'NG'}</span></td>
+    </tr>`).join('');
+
+  logBox.textContent = result.log.join("\n");
+}
+
+function exportResults(){
+  if (!lastResult || !lastResult.ok){ alert("Run a successful design before exporting."); return; }
+  const r = lastResult, g = r.geometry;
+  const lines = [];
+  lines.push("=".repeat(70));
+  lines.push("ISOLATED PAD FOOTING — DESIGN SUMMARY");
+  lines.push(`Generated: ${new Date().toISOString()}`);
+  lines.push("Code basis: NBCC 2020 / CSA A23.3-19");
+  lines.push("=".repeat(70));
+  lines.push("");
+  lines.push(`Governing ULS combination : ${r.governingCombo}`);
+  lines.push(`Footing dimensions (LxBxt): ${g.L.toFixed(0)} x ${g.B.toFixed(0)} x ${g.t.toFixed(0)} mm`);
+  lines.push(`Column dimensions (c1xc2) : ${g.c1.toFixed(0)} x ${g.c2.toFixed(0)} mm`);
+  lines.push(`Soil bearing q_max / q_min: ${r.qmax.toFixed(1)} / ${r.qmin.toFixed(1)} kPa`);
+  lines.push(`Eccentricity within kern  : ${r.withinKern}`);
+  lines.push("");
+  lines.push(`Reinforcement, long dir.  : ${r.barL}  (As_req=${r.AsReqL.toFixed(0)} mm^2/m)`);
+  lines.push(`Reinforcement, short dir. : ${r.barB}  (As_req=${r.AsReqB.toFixed(0)} mm^2/m)`);
+  lines.push("");
+  lines.push("Utilization ratios:");
+  Object.entries(r.utilization).forEach(([k,v])=>lines.push(`  ${k.padEnd(20)}: ${(v*100).toFixed(1)} %`));
+  lines.push("");
+  lines.push("Calculation log:");
+  r.log.forEach(l=>lines.push(`  ${l}`));
+  lines.push("");
+  lines.push("-".repeat(70));
+  lines.push("NOTE: Simplified NBCC load combinations and CSA A23.3 simplified one-way");
+  lines.push("shear method used. Engineer of record must verify against full code");
+  lines.push("provisions prior to construction/permit issuance.");
+
+  const blob = new Blob([lines.join("\n")], {type:"text/plain"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = "footing_design_summary.txt";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function activateTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active', p.id===id));
+  if (id==='view3d-pane') onResize();
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>activateTab(btn.dataset.tab));
+});
+document.getElementById('btn_design').addEventListener('click', runDesign);
+document.getElementById('btn_auto').addEventListener('click', runDesign);
+document.getElementById('btn_export').addEventListener('click', exportResults);
+document.getElementById('btn_3d').addEventListener('click', ()=>{
+  if (!lastResult || !lastResult.ok){
+    const {geo} = gatherInputs();
+    renderScene({c1:geo.c1,c2:geo.c2,t:geo.t,L:geo.L,B:geo.B,cover:geo.cover}, null);
+  } else {
+    renderScene(lastResult.geometry, lastResult);
+  }
+  activateTab('view3d-pane');
+});
+
+/* =========================================================================
+   3D VISUALIZATION (Three.js)
+   ========================================================================= */
+let scene, camera, renderer, rebarGroup, targetEl;
+let cam = { theta: Math.PI/4, phi: Math.PI/3.2, radius: 5000, target: new THREE.Vector3(0,0,-200) };
+let dragging=false, lastX=0, lastY=0;
+
+function initThree(){
+  targetEl = document.getElementById('three-container');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xdfe6ec);
+
+  camera = new THREE.PerspectiveCamera(45, targetEl.clientWidth/targetEl.clientHeight, 1, 50000);
+
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(targetEl.clientWidth, targetEl.clientHeight);
+  targetEl.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(3000,4000,5000);
+  scene.add(dir);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 0.35);
+  dir2.position.set(-3000,-2000,3000);
+  scene.add(dir2);
+
+  const grid = new THREE.GridHelper(8000, 20, 0xaebcc7, 0xc9d3db);
+  grid.rotation.x = Math.PI/2;
+  grid.position.z = -1;
+  scene.add(grid);
+
+  renderer.domElement.addEventListener('mousedown', e=>{dragging=true; lastX=e.clientX; lastY=e.clientY;});
+  window.addEventListener('mouseup', ()=>dragging=false);
+  window.addEventListener('mousemove', e=>{
+    if (!dragging) return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    cam.theta -= dx*0.006;
+    cam.phi = Math.min(Math.max(cam.phi - dy*0.006, 0.15), Math.PI/2-0.02);
+    lastX=e.clientX; lastY=e.clientY;
+    updateCamera();
+  });
+  renderer.domElement.addEventListener('wheel', e=>{
+    e.preventDefault();
+    cam.radius = Math.min(Math.max(cam.radius*(1+e.deltaY*0.001), 800), 20000);
+    updateCamera();
+  }, {passive:false});
+
+  window.addEventListener('resize', onResize);
+  animate();
+}
+function updateCamera(){
+  const {theta,phi,radius,target} = cam;
+  camera.position.set(
+    target.x + radius*Math.sin(phi)*Math.cos(theta),
+    target.y + radius*Math.sin(phi)*Math.sin(theta),
+    target.z + radius*Math.cos(phi)
+  );
+  camera.up.set(0,0,1);
+  camera.lookAt(target);
+}
+function onResize(){
+  if (!renderer || !targetEl) return;
+  const w = targetEl.clientWidth, h = targetEl.clientHeight;
+  if (w===0||h===0) return;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+}
+function animate(){ requestAnimationFrame(animate); renderer.render(scene,camera); }
+
+const BAR_DIAM = {"10M":11.3,"15M":16.0,"20M":19.5,"25M":25.2,"30M":29.9,"35M":35.7,"45M":43.7,"55M":56.4};
+function parseBarString(s){
+  const [barPart, rest] = s.split("@");
+  const bar = barPart.trim();
+  const spacing = parseFloat(rest.trim().split(" ")[0]);
+  return {bar, spacing};
+}
+
+function clearGroup(g){ while(g && g.children.length){ g.remove(g.children[0]); } }
+
+function renderScene(geo, result){
+  if (!scene) initThree();
+
+  // remove previous model group
+  if (window.__modelGroup) scene.remove(window.__modelGroup);
+  const model = new THREE.Group();
+  window.__modelGroup = model;
+
+  const {L,B,t,c1,c2,cover} = geo;
+  const colHeight = 800;
+
+  const footingMat = new THREE.MeshStandardMaterial({color:0xc9c2b4, roughness:0.9});
+  const footing = new THREE.Mesh(new THREE.BoxGeometry(L,B,t), footingMat);
+  footing.position.set(0,0,-t/2);
+  model.add(footing);
+
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(footing.geometry),
+    new THREE.LineBasicMaterial({color:0x6e6656}));
+  edges.position.copy(footing.position);
+  model.add(edges);
+
+  const colMat = new THREE.MeshStandardMaterial({color:0x8c8c8c, roughness:0.7});
+  const column = new THREE.Mesh(new THREE.BoxGeometry(c1,c2,colHeight), colMat);
+  column.position.set(0,0,colHeight/2);
+  model.add(column);
+  const colEdges = new THREE.LineSegments(new THREE.EdgesGeometry(column.geometry),
+    new THREE.LineBasicMaterial({color:0x333333}));
+  colEdges.position.copy(column.position);
+  model.add(colEdges);
+
+  rebarGroup = new THREE.Group();
+  if (result && result.ok){
+    const {bar:barL, spacing:spL} = parseBarString(result.barL);
+    const {bar:barB, spacing:spB} = parseBarString(result.barB);
+    const diaL = BAR_DIAM[barL] || 16;
+    const diaB = BAR_DIAM[barB] || 16;
+    const zBottom = -t + cover;
+
+    const nBarsL = Math.max(Math.floor(B/spL), 1);
+    for (let i=0;i<nBarsL;i++){
+      const y = -B/2+cover + (nBarsL>1 ? i*(B-2*cover)/(nBarsL-1) : 0);
+      const geomC = new THREE.CylinderGeometry(diaL/2, diaL/2, L-2*cover, 12);
+      const mesh = new THREE.Mesh(geomC, new THREE.MeshStandardMaterial({color:0xb03a2e}));
+      mesh.rotation.z = Math.PI/2; // cylinder default axis Y -> align along X
+      mesh.position.set(0,y,zBottom);
+      rebarGroup.add(mesh);
+    }
+    const nBarsB = Math.max(Math.floor(L/spB), 1);
+    for (let i=0;i<nBarsB;i++){
+      const x = -L/2+cover + (nBarsB>1 ? i*(L-2*cover)/(nBarsB-1) : 0);
+      const geomC = new THREE.CylinderGeometry(diaB/2, diaB/2, B-2*cover, 12);
+      const mesh = new THREE.Mesh(geomC, new THREE.MeshStandardMaterial({color:0x1f618d}));
+      mesh.rotation.x = Math.PI/2; // align along Y
+      mesh.position.set(x,0,zBottom+diaL);
+      rebarGroup.add(mesh);
+    }
+  }
+  model.add(rebarGroup);
+
+  scene.add(model);
+
+  cam.target.set(0,0,-t/2);
+  cam.radius = Math.max(L,B)*1.6 + 1000;
+  updateCamera();
+  onResize();
+}
+
+document.getElementById('btn_toggle_rebar').addEventListener('click', ()=>{
+  if (rebarGroup) rebarGroup.visible = !rebarGroup.visible;
+});
+
+// Initial render with default geometry so the 3D tab isn't empty on first view
+window.addEventListener('load', ()=>{
+  const {geo} = gatherInputs();
+  initThree();
+  renderScene({c1:geo.c1,c2:geo.c2,t:geo.t,L:geo.L,B:geo.B,cover:geo.cover}, null);
+});
+</script>
+</body>
+</html>
