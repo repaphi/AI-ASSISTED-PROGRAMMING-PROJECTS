@@ -1,0 +1,21 @@
+[07/12/2026 14:40:52][INFO]:	Reading UID database.
+[07/12/2026 14:40:52][INFO]:	Start loading STAAD model.
+[07/12/2026 14:40:52][INFO]:	Reading model file.
+[07/12/2026 14:40:52][INFO]:	Reading model file is complete.
+[07/12/2026 14:40:52][INFO]:	Processing support.
+[07/12/2026 14:40:52][INFO]:	Processing springs.
+[07/12/2026 14:40:52][INFO]:	Processing properties.
+[07/12/2026 14:40:52][INFO]:	Processing physical properties.
+[07/12/2026 14:40:52][INFO]:	Processing constants.
+[07/12/2026 14:40:52][INFO]:	Processing BETA constants.
+[07/12/2026 14:40:52][INFO]:	Processing hidden analytical member loads.
+[07/12/2026 14:40:52][INFO]:	Processing command list for member release.
+[07/12/2026 14:40:52][INFO]:	Processing command list for member offset.
+[07/12/2026 14:40:52][INFO]:	Processing command list for member specs (cracked).
+[07/12/2026 14:40:52][INFO]:	Processing command list for member specs (axial).
+[07/12/2026 14:40:52][INFO]:	Processing command list for element release.
+[07/12/2026 14:40:52][INFO]:	Processing command list for element offset.
+[07/12/2026 14:40:52][INFO]:	Processing command list for element plate stress directive.
+[07/12/2026 14:40:52][INFO]:	Processing parameter for Chinese wind load case.
+[07/12/2026 14:40:52][INFO]:	End Processing command list.
+[07/12/2026 14:40:52][INFO]:	End loading STAAD model.
