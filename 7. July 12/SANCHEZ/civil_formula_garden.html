@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Civil Formula Garden</title>
+  <style>
+    :root { --deep:#17483c; --forest:#21634f; --mint:#b9e7d1; --pale:#eaf8ef; --cream:#fffbea; --ink:#18352d; --rose:#e58b94; --sun:#f6d476; --sky:#8bcdd0; --line:#8bc5a8; --muted:#5a7e70; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at top right,#d5f2df 0,transparent 30rem),var(--pale); font:16px/1.48 "Segoe UI",system-ui,sans-serif; }
+    header { max-width:1280px; margin:auto; padding:28px 28px 14px; }
+    h1 { margin:0; color:var(--deep); font:700 clamp(2rem,4vw,2.8rem) Georgia,serif; }
+    .tagline { margin:3px 0 0; color:var(--muted); font-style:italic; }
+    .notice { max-width:1224px; margin:0 auto 14px; padding:8px 12px; border-radius:12px; background:var(--sun); font-size:.86rem; font-weight:700; }
+    main { max-width:1280px; margin:auto; padding:0 28px 28px; display:grid; grid-template-columns:250px minmax(430px,1fr) 235px; gap:14px; }
+    .panel { min-width:0; border:1px solid #d5e5d8; border-radius:20px; background:rgba(255,251,234,.92); box-shadow:0 8px 22px #1e544211; padding:18px; }
+    h2 { margin:0 0 9px; color:var(--forest); font:700 1.1rem Georgia,serif; }
+    h3 { margin:16px 0 7px; color:var(--forest); font:700 1rem Georgia,serif; }
+    button,select,input { font:inherit; }
+    button { cursor:pointer; border:0; border-radius:10px; padding:9px 11px; font-weight:700; color:var(--ink); background:var(--mint); transition:transform .12s,filter .12s; }
+    button:hover { filter:brightness(.97); transform:translateY(-1px); } button:disabled { cursor:not-allowed; opacity:.5; transform:none; }
+    .primary { background:var(--forest); color:white; } .danger { background:#f3c2c6; } .full { width:100%; }
+    select,input { width:100%; padding:8px; border:1px solid var(--line); border-radius:9px; background:white; color:var(--ink); }
+    .label { display:block; font-size:.84rem; font-weight:700; margin:10px 0 4px; }
+    .statbox,.weak { white-space:pre-line; color:var(--ink); font-size:.92rem; }
+    .weak { color:var(--muted); } .spacer { height:8px; }
+    .subject { display:inline-block; padding:4px 9px; border-radius:999px; background:var(--mint); color:var(--forest); font-size:.78rem; font-weight:800; }
+    .card-title { margin:13px 0 8px; font:700 1.35rem Georgia,serif; color:var(--deep); }
+    .question { margin:0 0 15px; font-size:1.05rem; }
+    .hint { min-height:22px; margin:0 0 10px; color:var(--muted); font-style:italic; }
+    .answer { min-height:68px; display:flex; align-items:center; margin-bottom:10px; padding:14px; border-radius:12px; background:var(--mint); color:var(--deep); font:700 1rem/1.5 Consolas,"Courier New",monospace; white-space:pre-wrap; }
+    .placeholder { background:#f4fff8; color:var(--muted); font:italic 1rem "Segoe UI",sans-serif; }
+    .explanation { min-height:145px; padding:12px; border-radius:12px; background:#f4fff8; white-space:pre-wrap; font-size:.94rem; }
+    .actions,.grades,.timer-actions { display:flex; gap:8px; margin-top:12px; } .actions { justify-content:space-between; } .grades button { flex:1; font-size:.84rem; padding:8px 4px; } .again{background:var(--rose)} .hard{background:var(--sun)} .good{background:var(--mint)} .easy{background:var(--sky)}
+    .timer-mode { display:inline-block; padding:3px 8px; border-radius:999px; background:var(--mint); color:var(--forest); font-size:.75rem; font-weight:800; }
+    .clock { text-align:center; color:var(--deep); font:700 3rem Georgia,serif; margin:4px 0 10px; } .mini { color:var(--muted); font-size:.86rem; }
+    .settings { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px; } .settings label { font-size:.77rem; font-weight:700; }
+    @media (max-width:1000px) { main { grid-template-columns:230px 1fr; } .timer-panel { grid-column:1/-1; } }
+    @media (max-width:650px) { header,main { padding-left:14px; padding-right:14px; } main { display:flex; flex-direction:column; } .grades button { font-size:.75rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Civil Formula Garden 🌱</h1>
+    <p class="tagline">A soft little space for recalling, understanding, and returning to the formulas.</p>
+  </header>
+  <div class="notice">Study aid only — verify code-specific factors, limits, and provisions against the NSCP edition prescribed by your class.</div>
+  <main>
+    <aside class="panel">
+      <h2>Choose your garden bed</h2>
+      <select id="subject"><option>All subjects</option><option>Geotechnical Engineering</option><option>Steel Design</option><option>RC / Prestressed Concrete</option></select>
+      <div class="spacer"></div><button class="primary full" id="start">Start due cards</button>
+      <h3>Today’s little wins</h3><div id="stats" class="statbox"></div>
+      <h3>Needs extra sunshine</h3><div id="weak" class="weak">No reviews yet—your garden is fresh!</div>
+      <div class="spacer"></div><button class="danger full" id="resetProgress">Reset study progress</button>
+    </aside>
+
+    <section class="panel">
+      <h2>Active recall card</h2>
+      <span id="subjectBadge" class="subject"></span>
+      <div id="title" class="card-title"></div>
+      <p id="question" class="question"></p>
+      <p id="hint" class="hint"></p>
+      <div id="answer" class="answer placeholder">🌿 Take a breath, try to recall it, then reveal the answer.</div>
+      <div id="explanation" class="explanation">Derivation and context will appear after you reveal the answer.</div>
+      <div class="actions"><button id="hintButton">Show a hint</button><button id="answerButton" class="primary">Reveal answer</button></div>
+      <div class="grades">
+        <button class="again" data-grade="1" disabled>Again<br><small>1 day</small></button>
+        <button class="hard" data-grade="3" disabled>Hard<br><small>≈1 day</small></button>
+        <button class="good" data-grade="4" disabled>Good<br><small>spaced</small></button>
+        <button class="easy" data-grade="5" disabled>Easy<br><small>longer</small></button>
+      </div>
+    </section>
+
+    <aside class="panel timer-panel">
+      <h2>Pomodoro nook 🍵</h2><span id="timerMode" class="timer-mode">STUDY</span><div id="clock" class="clock">25:00</div>
+      <div class="timer-actions"><button id="toggleTimer" class="primary">Start focus</button><button id="resetTimer">Reset</button></div>
+      <div class="settings"><label>Study minutes<input id="studyMinutes" type="number" min="5" max="90"></label><label>Break minutes<input id="breakMinutes" type="number" min="1" max="30"></label></div>
+      <div class="spacer"></div><button id="saveTimer" class="full">Save timer settings</button>
+      <h3>How this garden grows</h3><p class="mini">Try recalling before revealing. Again returns tomorrow. Hard grows slowly. Good and Easy extend the interval. Weak cards are based on your lapses and ease score.</p>
+    </aside>
+  </main>
+
+  <script>
+  // Every card includes a short explanation so active recall is paired with understanding.
+  const cards = [
+    ['g_phase','Geotechnical Engineering','Phase relationships','How are void ratio e, porosity n, and degree of saturation Sᵣ defined?','e = Vᵥ/Vₛ     n = Vᵥ/V = e/(1 + e)     Sᵣ = Vw/Vᵥ','Think: voids/solids; voids/total volume; water/voids.','A soil phase diagram separates solids, water, and air. Void ratio compares void volume with solids; porosity compares it with total volume; saturation is the fraction of voids occupied by water.'],
+    ['g_unit','Geotechnical Engineering','Unit weight relationships','Recall the basic unit-weight equations and the dry-unit-weight relation using Gₛ and e.','γ = W/V     γd = Wₛ/V = γ/(1 + w)     γd = Gₛγw/(1 + e)','For dry soil, only the soil solids contribute to weight.','Unit weight is weight per total volume. The last form follows from Wₛ = GₛγwVₛ and V = Vₛ(1 + e). Use moisture content w as a decimal.'],
+    ['g_effective','Geotechnical Engineering','Effective stress',"What is Terzaghi's effective-stress relationship?","σ′ = σ − u     where u = γw hᵥ for hydrostatic water pressure",'The soil skeleton carries effective stress; pore water carries u.','Total stress comes from all overburden. Pore pressure offsets part of it, leaving effective stress at grain contacts. Strength, settlement, and consolidation are governed mainly by σ′.'],
+    ['g_darcy','Geotechnical Engineering',"Darcy's law",'State Darcy’s law and distinguish discharge velocity from seepage velocity.','q = kiA     v = q/A = ki     vₛ = q/(nA) = v/n','Hydraulic gradient i is head loss divided by flow length.','Darcy’s law models laminar groundwater flow. q is discharge, v uses gross soil area, while vₛ uses only void area—so seepage velocity is larger.'],
+    ['g_mohr','Geotechnical Engineering','Mohr–Coulomb shear strength','What equation represents drained Mohr–Coulomb shear strength?','τf = c′ + σ′ tan φ′','Cohesion intercept plus friction mobilized by effective normal stress.','The failure envelope is plotted in τ–σ′ space. Use effective-stress parameters c′ and φ′ for drained/long-term analysis; use the appropriate undrained framework for short-term saturated clay.'],
+    ['g_bearing','Geotechnical Engineering','Terzaghi bearing capacity','Recall the classic general-shear bearing-capacity form for a strip footing.','qᵤlt = cNᶜ + qNq + 0.5γBNγ     with q = γDf','Three contributions: cohesion, surcharge, and soil self-weight.','This is the basic Terzaghi form. Real design may require shape, depth, inclination, water-table, eccentricity, and settlement checks. The geotechnical report controls allowable bearing pressure.'],
+    ['g_consolidation','Geotechnical Engineering','Primary consolidation settlement','What is the one-dimensional normally consolidated clay settlement equation?','Sc = [Cc H/(1 + e₀)] log₁₀[(σ′₀ + Δσ′)/σ′₀]','Compression index × layer thickness, scaled by stress increase on a log scale.','The equation comes from the e–log σ′ compression curve. Split layers when properties or stress increments vary. Overconsolidated clays require recompression treatment.'],
+    ['g_time','Geotechnical Engineering','Rate of consolidation','Relate coefficient of consolidation cᵥ, time factor Tᵥ, drainage path Hdr, and time t.','Tᵥ = cᵥt / Hdr²     therefore t = TᵥHdr²/cᵥ','Double drainage means Hdr is half the clay-layer thickness.','Terzaghi’s solution uses a dimensionless time factor. Drainage path has a squared effect, which is why drainage conditions are so important.'],
+    ['s_tension','Steel Design','Tension-member limit states','What two major tension-member strength checks should you recall?','Yielding: Pn = FyAg     Fracture: Pn = FuAe     Design: φPn','Gross area is used for yielding; effective net area is used for fracture.','A tension member must be checked for gross-section yielding and net-section fracture, along with block shear where applicable. Verify φ, shear lag U, and connection rules in your assigned code.'],
+    ['s_slender','Steel Design','Column slenderness ratio','How is the column slenderness ratio written?','KL/r','K is effective-length factor, L is unsupported length, and r = √(I/A).','Slenderness compares effective buckling length with stiffness radius. Evaluate both principal axes and use the larger governing KL/r.'],
+    ['s_euler','Steel Design','Euler elastic buckling stress','What is Euler’s elastic critical buckling stress?','Fe = π²E / (KL/r)²','Buckling strength falls with the square of slenderness.','Euler buckling idealizes an elastic, perfectly straight column. Modern specifications use it within column curves that account for inelastic behavior and residual stresses.'],
+    ['s_column','Steel Design','Compression-member curve','Recall the common AISC/NSCP-style column curve using λc = √(Fy/Fe).','If λc ≤ 1.5: Fcr = 0.658^(λc²)Fy\nIf λc > 1.5: Fcr = 0.877Fy/λc²\nPn = FcrAg','First find Fe, then compare it with Fy through λc.','This combines inelastic and elastic buckling regions. Apply the governing code resistance factor and check the current NSCP provisions and section classification.'],
+    ['s_flexure','Steel Design','Plastic moment of a compact section','What is the nominal plastic flexural strength of a fully compact, laterally supported steel section?','Mn = Fy Zx','Zx is plastic section modulus—not elastic section modulus Sx.','At plastic moment, the cross-section has reached yield with tension and compression resultants in equilibrium. Lateral-torsional buckling and local slenderness can reduce strength.'],
+    ['s_elastic','Steel Design','Elastic yield moment','What moment first yields the extreme fiber of an elastic steel section?','My = Fy Sx','Use Sx for elastic behavior and Zx for fully plastic behavior.','From f = Mc/I and S = I/c, setting f = Fy gives My = FySx. Compactness and bracing determine whether plastic strength is achievable.'],
+    ['s_bolt','Steel Design','Bolt connection strength idea','What is the general form of a bolt shear or bearing resistance calculation?','Rn = nominal stress × applicable area     Design strength = φRn','Find the governing limit state before reaching for a resistance factor.','Connections can govern by bolt shear, bearing/tear-out, slip, block shear, or connected-part limit states. Bolt type, threads, hole type, and load direction matter.'],
+    ['s_weld','Steel Design','Fillet weld throat','What is the effective throat area of a fillet weld?','Aw = 0.707wL','The 45° throat is 0.707 times the leg size w.','Fillet weld capacity depends on effective throat, weld length, electrode strength, and applicable limit state. Account for weld-group geometry and minimum/maximum weld sizes.'],
+    ['rc_stressblock','RC / Prestressed Concrete','Rectangular stress block','For a singly reinforced rectangular beam, recall a and nominal moment Mn.','a = Asfy/(0.85f′c b)     Mn = Asfy(d − a/2)','Set tensile steel force Asfy equal to compression block force 0.85f′cba.','The rectangular stress block replaces nonlinear concrete compression stress with an equivalent block. Check strain compatibility, steel-yield assumptions, and code limits.'],
+    ['rc_strength','RC / Prestressed Concrete','Strength-reduction format','How is factored member strength compared with factored demand?','φRn ≥ U     (for flexure, commonly φMn ≥ Mu)','φ reduces nominal strength; U is the factored load effect.','Strength design combines loads to obtain demand U, calculates nominal resistance Rn, then applies φ. Factors vary with failure mode and strain condition.'],
+    ['rc_balanced','RC / Prestressed Concrete','Balanced reinforcement ratio','Recall the strain-compatibility expression for balanced steel ratio ρb.','ρb = 0.85β₁(f′c/fy) [εcu/(εcu + fy/Es)]','At balance, concrete reaches crushing strain when tension steel just yields.','Balanced conditions separate tension-controlled from compression-controlled behavior. Design limits tensile reinforcement to promote ductile, tension-controlled response.'],
+    ['rc_shear','RC / Prestressed Concrete','Concrete one-way shear (SI reference)','What common introductory form is used for concrete shear capacity without axial load?','Vc = 0.17λ√f′c bwd     (SI reference; verify code conditions)','Concrete strength varies with √f′c and web width × effective depth.','This is an introductory reference only. Current provisions include conditions involving depth, reinforcement, axial load, location, and other effects. Use the exact NSCP chapter in design.'],
+    ['rc_dev','RC / Prestressed Concrete','Development-length concept','What variables generally increase/decrease tension development length ld?','ld ∝ (fy db)/(λ√f′c) × applicable modification factors','Higher fy and larger bars need more bond length; stronger concrete reduces it.','Development length transfers bar force to concrete through bond. Cover, spacing, confinement, top-bar condition, epoxy coating, hooks, and bar location can alter the required length.'],
+    ['pc_jacking','RC / Prestressed Concrete','Prestressing force and stress','How do you relate prestressing force and tendon stress?','Pj = Ap fpj     and     Pe = Ap fpe','Force equals tendon area times tendon stress.','j denotes jacking and e denotes effective after losses. Allowable jacking stress and effective prestress depend on the tendon system and code limits.'],
+    ['pc_loss','RC / Prestressed Concrete','Prestress losses','How is effective prestress conceptually obtained from initial prestress?','Pe = Pi − ΔP(losses)','List elastic shortening, creep, shrinkage, relaxation, friction, and anchorage set as applicable.','Not every loss applies to every system. Pre-tensioned and post-tensioned members have different sequences and loss mechanisms.'],
+    ['pc_stress','RC / Prestressed Concrete','Service stress from prestress and moment','Recall the elastic stress expression at a section with prestress eccentricity e.','f = P/A ± Pey/I ± My/I','Direct prestress, eccentric prestress, and external bending superimpose.','Use a consistent sign convention and evaluate top and bottom fibers at transfer and service. Cracked-section and strength checks are separate.']
+  ].map(([id,subject,title,question,formula,hint,explanation]) => ({id,subject,title,question,formula,hint,explanation}));
+
+  const key = 'civilFormulaGardenProgressV1';
+  const defaults = { cards:{}, settings:{study:25,break:5}, sessions:[] };
+  let saved = JSON.parse(localStorage.getItem(key) || 'null') || structuredClone(defaults);
+  saved.cards ||= {}; saved.settings ||= {study:25,break:5}; saved.sessions ||= [];
+  let current = null, revealed = false, reviewed = 0, good = 0, focusMinutes = 0;
+  const $ = id => document.getElementById(id), today = () => new Date().toISOString().slice(0,10);
+  const save = () => localStorage.setItem(key, JSON.stringify(saved));
+  function state(id) { return saved.cards[id] ||= {due:today(),interval:0,ease:2.5,repetitions:0,reviews:0,lapses:0,lastGrade:null}; }
+  function eligible() { const subject=$('subject').value; return cards.filter(c=>subject==='All subjects'||c.subject===subject); }
+  function dueCards() { return eligible().filter(c=>state(c.id).due<=today()); }
+  function pickNext() { const choices=dueCards(); const pool=choices.length?choices:eligible(); current=pool[Math.floor(Math.random()*pool.length)]; revealed=false; renderCard(); refresh(); }
+  function renderCard() { $('subjectBadge').textContent=current.subject; $('title').textContent=current.title; $('question').textContent=current.question; $('hint').textContent=''; $('answer').textContent='🌿 Take a breath, try to recall it, then reveal the answer.'; $('answer').className='answer placeholder'; $('explanation').textContent='Derivation and context will appear after you reveal the answer.'; $('answerButton').disabled=false; $('hintButton').disabled=false; document.querySelectorAll('[data-grade]').forEach(b=>b.disabled=true); }
+  function reveal() { if(!current)return; revealed=true; $('answer').textContent=current.formula; $('answer').className='answer'; $('explanation').textContent=current.explanation; $('answerButton').disabled=true; document.querySelectorAll('[data-grade]').forEach(b=>b.disabled=false); }
+  function grade(q) { if(!current||!revealed)return; const s=state(current.id); s.reviews++; s.lastGrade=q; if(q<3){s.repetitions=0;s.interval=1;s.ease=Math.max(1.3,s.ease-.2);s.lapses++;}else{let interval=s.repetitions===0?1:s.repetitions===1?6:Math.max(1,Math.round(s.interval*s.ease)); if(q===3) interval=Math.max(1,Math.round(interval*.7)); if(q===5) interval=Math.max(2,Math.round(interval*1.3)); s.interval=interval;s.repetitions++;s.ease=Math.min(3,Math.max(1.3,s.ease+(q-4)*.1));} const d=new Date();d.setDate(d.getDate()+s.interval);s.due=d.toISOString().slice(0,10); reviewed++;if(q>=4)good++;save();pickNext(); }
+  function refresh() { const total=cards.reduce((n,c)=>n+state(c.id).reviews,0); $('stats').textContent=`Due now: ${dueCards().length}\nThis session: ${reviewed} cards\nGood/Easy: ${good}\nAll-time reviews: ${total}\nFocus time: ${focusMinutes} min`; const weak=cards.filter(c=>state(c.id).reviews).sort((a,b)=>state(b.id).lapses-state(a.id).lapses||state(a.id).ease-state(b.id).ease).slice(0,5); $('weak').textContent=weak.length?weak.map(c=>`• ${c.title} (${state(c.id).lapses} lapse${state(c.id).lapses===1?'':'s'})`).join('\n'):'No reviews yet—your garden is fresh!\n\nCards you rate Again will appear here.'; }
+
+  let timer=null, running=false, onBreak=false, remaining=0;
+  function setTimerFromSettings(){ if(!running){onBreak=false;remaining=Number(saved.settings.study)*60;showClock();} }
+  function showClock(){const m=Math.floor(Math.max(0,remaining)/60),s=Math.max(0,remaining)%60;$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;$('timerMode').textContent=onBreak?'BREAK':'STUDY';}
+  function tick(){if(!running)return;showClock();if(remaining<=0){if(!onBreak){focusMinutes+=Number(saved.settings.study);refresh();alert('Focus block complete 🌿\nLovely work. Time for a small break.');onBreak=true;remaining=Number(saved.settings.break)*60;}else{alert('Break complete! Welcome back for another gentle focus block.');onBreak=false;remaining=Number(saved.settings.study)*60;}showClock();}remaining--;timer=setTimeout(tick,1000);}
+  function toggleTimer(){running=!running;$('toggleTimer').textContent=running?'Pause':'Start focus';if(running)tick();else {clearTimeout(timer);timer=null;}}
+  function saveSettings(){const study=Number($('studyMinutes').value),br=Number($('breakMinutes').value);if(study<5||study>90||br<1||br>30){alert('Study time must be 5–90 minutes and break time 1–30 minutes.');return;}saved.settings={study,break:br};save();setTimerFromSettings();}
+  function resetTimer(){clearTimeout(timer);timer=null;running=false;onBreak=false;remaining=Number(saved.settings.study)*60;$('toggleTimer').textContent='Start focus';showClock();}
+
+  $('start').onclick=pickNext; $('subject').onchange=pickNext; $('hintButton').onclick=()=>{$('hint').textContent='Hint: '+current.hint}; $('answerButton').onclick=reveal; document.querySelectorAll('[data-grade]').forEach(b=>b.onclick=()=>grade(Number(b.dataset.grade))); $('toggleTimer').onclick=toggleTimer; $('saveTimer').onclick=saveSettings; $('resetTimer').onclick=resetTimer;
+  $('resetProgress').onclick=()=>{if(confirm('Clear every review date, interval, lapse, and session summary?')){saved=structuredClone(defaults);save();reviewed=good=focusMinutes=0;$('studyMinutes').value=25;$('breakMinutes').value=5;setTimerFromSettings();pickNext();}};
+  window.addEventListener('beforeunload',()=>{if(reviewed)saved.sessions.push({date:today(),reviewed,good,focusMinutes});saved.sessions=saved.sessions.slice(-100);save();});
+  $('studyMinutes').value=saved.settings.study; $('breakMinutes').value=saved.settings.break; setTimerFromSettings(); pickNext();
+  </script>
+</body>
+</html>
